@@ -1,0 +1,40 @@
+version: '3.8'
+
+networks:
+  template-network:
+    driver: bridge
+
+services:
+  template-api:
+    image: TODO:Replace #exemple: noephilippe/template-api:latest
+    container_name: template-api
+    restart: always
+    env_file: .env
+    volumes:
+      - upload:/app/public/files
+    ports:
+      - '8000:8000'
+    depends_on:
+      - template-db
+    networks:
+      - template-network
+
+  template-db:
+    image: 'postgres:14.5-alpine'
+    command: postgres -c 'max_connections=1000'
+    restart: always
+    container_name: template-db
+    environment:
+      - POSTGRES_PASSWORD=${TYPEORM_PASSWORD}
+      - POSTGRES_USER=${TYPEORM_USERNAME}
+      - POSTGRES_DB=${TYPEORM_DATABASE}
+    volumes:
+      - db:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
+    networks:
+      - template-network
+
+volumes:
+  upload:
+  db:
