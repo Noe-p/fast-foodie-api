@@ -1,16 +1,14 @@
-import { errorMessage } from '@/errors';
 import { AuthLoginApi, RegisterApi } from '@/types';
 import { userValidation } from '@/validations';
 import {
   BadRequestException,
   Body,
   Controller,
+  forwardRef,
   HttpCode,
   Inject,
-  NotFoundException,
   Post,
   UseGuards,
-  forwardRef,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ApiKeyGuard } from '../../decorators/api-key.decorator';
@@ -34,23 +32,6 @@ export class AuthController {
       await userValidation.login.validate(body, {
         abortEarly: false,
       });
-      return await this.authService.login(body);
-    } catch (e) {
-      throw new BadRequestException(e);
-    }
-  }
-
-  @Post('login/admin')
-  @UseGuards(ApiKeyGuard)
-  @HttpCode(200)
-  async loginAdmin(@Body() body: AuthLoginApi) {
-    try {
-      await userValidation.login.validate(body, {
-        abortEarly: false,
-      });
-      const user = await this.userService.getOneByEmail(body.email);
-      if (!user.isAdmin)
-        throw new NotFoundException(errorMessage.api('user').NOT_ADMIN);
       return await this.authService.login(body);
     } catch (e) {
       throw new BadRequestException(e);

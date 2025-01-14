@@ -2,7 +2,7 @@ import * as dotenv from 'dotenv';
 import { DataSource } from 'typeorm';
 dotenv.config();
 
-export const mysqlDataSource = new DataSource({
+export const AppDataSource = new DataSource({
   name: process.env.TYPEORM_NAME,
   type: 'postgres',
   host: process.env.TYPEORM_HOST,

@@ -7,11 +7,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { join } from 'path';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { AdminModule } from './modules/admin/admin.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { FileUploadModule } from './modules/file-upload/file-upload.module';
 import { MediaModule } from './modules/media/media.module';
 import { UserModule } from './modules/user/user.module';
+import { FoodModule } from './modules/food/food.module';
+import { IngredientModule } from './modules/ingredient/ingredient.module';
+import { DishModule } from './modules/dish/dish.module';
 
 @Module({
   imports: [
@@ -35,9 +37,11 @@ import { UserModule } from './modules/user/user.module';
 
     UserModule,
     AuthModule,
-    AdminModule,
     FileUploadModule,
     MediaModule,
+    FoodModule,
+    IngredientModule,
+    DishModule,
   ],
   controllers: [AppController],
   providers: [AppService],

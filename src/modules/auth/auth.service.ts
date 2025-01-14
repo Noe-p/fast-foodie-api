@@ -1,5 +1,5 @@
 import { errorMessage } from '@/errors';
-import { AuthLoginApi, TechRegisterApi } from '@/types';
+import { AuthLoginApi, RegisterApi } from '@/types';
 import {
   BadRequestException,
   Inject,
@@ -22,31 +22,33 @@ export class AuthService {
   ) {}
 
   async login(body: AuthLoginApi) {
-    const user = await this.userRepository.getOneByEmail(body.email);
+    const user = await this.userRepository.getOneByUsername(body.login);
     if (!user)
-      throw new NotFoundException(
-        errorMessage.api('user').NOT_FOUND_OR_WRONG_PASSWORD,
-      );
+      throw new NotFoundException({
+        message: errorMessage.api('user').NOT_FOUND_OR_WRONG_PASSWORD,
+      });
     if (body.password)
-      await this.authValidation.validateUser(body.email, body.password);
-    const payload = { email: user.email, id: user.id };
+      await this.authValidation.validateUser(body.login, body.password);
+    const payload = { userName: user.userName, id: user.id };
     return {
       access_token: this.jwtService.sign(payload),
     };
   }
 
-  async register(body: TechRegisterApi) {
-    const { password, email } = body;
-    const possibleUser = await this.userRepository.getOneByEmail(email);
+  async register(body: RegisterApi) {
+    const { password, userName } = body;
+    const possibleUser = await this.userRepository.getOneByUsername(userName);
     if (possibleUser)
-      throw new BadRequestException(errorMessage.api('user').EXIST);
+      throw new BadRequestException({
+        message: errorMessage.api('user').EXIST,
+      });
     const encryptedPassword = await this.encryptPassword(password);
     const createdUser = await this.userRepository.createUser({
       ...body,
       password: encryptedPassword,
     });
     return {
-      access_token: await this.login({ email, password }),
+      access_token: await this.login({ login: userName, password }),
       user: createdUser,
     };
   }

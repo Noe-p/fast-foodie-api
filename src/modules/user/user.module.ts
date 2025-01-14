@@ -7,7 +7,8 @@ import {
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthMiddleware } from '../auth/auth.middleware';
 import { AuthModule } from '../auth/auth.module';
-import { MediaModule } from '../media/media.module';
+import { DishModule } from '../dish/dish.module';
+import { FoodModule } from '../food/food.module';
 import { UserController } from './user.controller';
 import { User } from './user.entity';
 import { UserService } from './user.service';
@@ -16,7 +17,8 @@ import { UserService } from './user.service';
   imports: [
     TypeOrmModule.forFeature([User]),
     forwardRef(() => AuthModule),
-    forwardRef(() => MediaModule),
+    forwardRef(() => FoodModule),
+    forwardRef(() => DishModule),
   ],
   providers: [UserService],
   controllers: [UserController],
@@ -27,8 +29,13 @@ export class UserModule {
     consumer
       .apply(AuthMiddleware)
       .forRoutes(
-        { path: '/users', method: RequestMethod.ALL },
-        { path: '/users/*', method: RequestMethod.ALL },
+        { path: '/users', method: RequestMethod.DELETE },
+        { path: '/users', method: RequestMethod.PATCH },
+        { path: '/users', method: RequestMethod.POST },
+        { path: '/users/*', method: RequestMethod.DELETE },
+        { path: '/users/*', method: RequestMethod.PATCH },
+        { path: '/users/*', method: RequestMethod.POST },
+        { path: '/users/me', method: RequestMethod.GET },
       );
   }
 }

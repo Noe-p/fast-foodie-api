@@ -1,11 +1,11 @@
 import { errorMessage } from '@/errors';
 import { MediaDto, MediaType } from '@/types';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import * as fs from 'fs';
 import { In, Repository } from 'typeorm';
 import { FileUploadService } from '../file-upload/file-upload.service';
 import { Media } from './media.entity';
-import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class MediaService {
@@ -57,7 +57,10 @@ export class MediaService {
       });
       return media;
     } catch (e) {
-      throw new BadRequestException(errorMessage.api('media').NOT_FOUND, _id);
+      throw new BadRequestException({
+        message: errorMessage.api('media').NOT_FOUND,
+        _id,
+      });
     }
   }
 
@@ -68,10 +71,9 @@ export class MediaService {
       });
       return medias.map((media) => this.formatMedia(media));
     } catch (e) {
-      throw new BadRequestException(
-        errorMessage.api('media').NOT_FOUND,
-        ids.join(', '),
-      );
+      throw new BadRequestException({
+        message: errorMessage.api('media').NOT_FOUND,
+      });
     }
   }
 
@@ -91,7 +93,9 @@ export class MediaService {
   async createMedia(file: Express.Multer.File): Promise<MediaDto> {
     try {
       if (!file)
-        throw new BadRequestException(errorMessage.api('file').UNDEFINED);
+        throw new BadRequestException({
+          message: errorMessage.api('file').UNDEFINED,
+        });
       const fileName = file.filename;
       const type = this.fileUploadService.detectFileType(file.filename);
       const media = await this.mediaRepository.save({
@@ -104,7 +108,9 @@ export class MediaService {
       return this.formatMedia(media);
     } catch (e) {
       console.log(e);
-      throw new BadRequestException(errorMessage.api('media').NOT_CREATED);
+      throw new BadRequestException({
+        message: errorMessage.api('media').NOT_CREATED,
+      });
     }
   }
 
@@ -119,7 +125,9 @@ export class MediaService {
       };
       return await this.mediaRepository.save(media);
     } catch (e) {
-      throw new BadRequestException(errorMessage.api('media').NOT_FOUND);
+      throw new BadRequestException({
+        message: errorMessage.api('media').NOT_FOUND,
+      });
     }
   }
 
@@ -132,7 +140,9 @@ export class MediaService {
       fs.unlinkSync(this.getLocalFilePathFromUrl(media.url));
     } catch (e) {
       console.log(e);
-      throw new BadRequestException(errorMessage.api('media').NOT_DELETED);
+      throw new BadRequestException({
+        message: errorMessage.api('media').NOT_DELETED,
+      });
     }
   }
 }

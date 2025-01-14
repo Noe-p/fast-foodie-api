@@ -1,4 +1,3 @@
-import { errorMessage } from '@/errors';
 import { UpdateUserApi, UserDto } from '@/types';
 import { userValidation } from '@/validations';
 import {
@@ -6,13 +5,12 @@ import {
   Body,
   Controller,
   Delete,
+  forwardRef,
   Get,
   HttpCode,
   Inject,
-  Param,
   Patch,
   UseGuards,
-  forwardRef,
 } from '@nestjs/common';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { ApiKeyGuard } from 'src/decorators/api-key.decorator';
@@ -60,44 +58,5 @@ export class UserController {
   @ApiBearerAuth()
   deleteUser(@GetCurrentUser() user: User): void {
     this.service.deleteUser(user.id);
-  }
-
-  @Delete(':id')
-  @HttpCode(204)
-  @UseGuards(ApiKeyGuard)
-  @ApiBearerAuth()
-  async deleteUserById(
-    @GetCurrentUser() user: User,
-    @Param('id') id: string,
-  ): Promise<void> {
-    try {
-      const possibleUser = await this.service.getOneById(id);
-      if (!possibleUser)
-        throw new BadRequestException(errorMessage.api('user').NOT_FOUND);
-      this.service.deleteUser(id);
-    } catch (e) {
-      throw new BadRequestException(e);
-    }
-  }
-
-  @Patch(':id')
-  @HttpCode(200)
-  @UseGuards(ApiKeyGuard)
-  @ApiBearerAuth()
-  async updateUserById(
-    @GetCurrentUser() user: User,
-    @Param('id') id: string,
-    @Body() body: UpdateUserApi,
-  ): Promise<UserDto> {
-    try {
-      await userValidation.update.validate(body, {
-        abortEarly: false,
-      });
-      const userUpdated = await this.service.updateUser(body, id);
-      return this.service.formatUser(userUpdated);
-    } catch (e) {
-      console.log(e);
-      throw new BadRequestException(e);
-    }
   }
 }

@@ -1,31 +1,35 @@
 /* eslint-disable @typescript-eslint/no-empty-interface */
 /* eslint-disable @typescript-eslint/no-empty-function */
+import { ApiKeyGuard } from '@/decorators/api-key.decorator';
 import { errorMessage } from '@/errors';
 import {
   BadRequestException,
   Controller,
+  Delete,
   Get,
   HttpCode,
   Inject,
+  Param,
   Post,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import * as fs from 'fs/promises';
 import { diskStorage } from 'multer';
+import * as path from 'path';
 import { extname } from 'path';
+import * as sharp from 'sharp';
 import { v4 as uuid } from 'uuid';
 import { MediaService } from '../media/media.service';
-import * as sharp from 'sharp';
-import * as fs from 'fs/promises';
-import * as path from 'path';
 
 export function replaceAll(str: string, find: string, replace: string) {
   return str.replace(new RegExp(find, 'g'), replace);
 }
 
-@Controller('file-upload')
+@Controller('upload')
 export class FileUploadController {
   constructor(
     @Inject(MediaService)
@@ -55,7 +59,9 @@ export class FileUploadController {
         const extension = allowedExtensions.exec(file.originalname);
         if (!extension) {
           return callback(
-            new BadRequestException(errorMessage.api('file').INVALID_FORMAT),
+            new BadRequestException({
+              message: errorMessage.api('file').INVALID_FORMAT,
+            }),
             false,
           );
         }
@@ -66,13 +72,16 @@ export class FileUploadController {
   @HttpCode(201)
   async upload(@UploadedFile() file: Express.Multer.File) {
     if (!file.mimetype.startsWith('image')) {
-      throw new BadRequestException(errorMessage.api('file').INVALID_FORMAT);
+      throw new BadRequestException({
+        message: errorMessage.api('file').INVALID_FORMAT,
+      });
     }
 
     const imageData = await fs.readFile(file.path);
     const compressedImageBuffer = await sharp(imageData)
+      .rotate()
       .resize({ width: 800 })
-      .webp({ quality: 80 })
+      .webp({ quality: 60 })
       .toBuffer();
 
     const fileNameWithoutExtension = path.parse(file.filename).name;
@@ -94,5 +103,13 @@ export class FileUploadController {
   @HttpCode(200)
   async test() {
     return await this.mediaService.populateMedias();
+  }
+
+  @Delete(':id')
+  @HttpCode(204)
+  @UseGuards(ApiKeyGuard)
+  @ApiBearerAuth()
+  delete(@Param('id') id: string) {
+    return this.mediaService.deleteMedia(id);
   }
 }

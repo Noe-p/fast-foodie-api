@@ -7,9 +7,9 @@ import {
 import { AuthMiddleware } from '../auth/auth.middleware';
 import { AuthModule } from '../auth/auth.module';
 import { MediaModule } from '../media/media.module';
-import { FileUploadService } from './file-upload.service';
-import { FileUploadController } from './file-upload.controller';
 import { UserModule } from '../user/user.module';
+import { FileUploadController } from './file-upload.controller';
+import { FileUploadService } from './file-upload.service';
 
 @Module({
   imports: [
@@ -26,8 +26,8 @@ export class FileUploadModule {
     consumer
       .apply(AuthMiddleware)
       .forRoutes(
-        { path: '/file-upload', method: RequestMethod.ALL },
-        { path: '/file-upload/*', method: RequestMethod.ALL },
+        { path: '/upload', method: RequestMethod.ALL },
+        { path: '/upload/*', method: RequestMethod.ALL },
       );
   }
 }

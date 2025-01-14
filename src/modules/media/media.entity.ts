@@ -1,6 +1,7 @@
+import { Column, Entity, ManyToOne } from 'typeorm';
 import { MediaType } from '../../types';
-import { Column, Entity } from 'typeorm';
 import { BaseEntity } from '../base.entity';
+import { Dish } from '../dish/Dish.entity';
 
 @Entity()
 export class Media extends BaseEntity {
@@ -18,4 +19,9 @@ export class Media extends BaseEntity {
 
   @Column()
   size: number;
+
+  @ManyToOne(() => Dish, (dish) => dish.images, {
+    onDelete: 'CASCADE',
+  })
+  dish: Dish;
 }

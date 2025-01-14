@@ -1,15 +1,15 @@
 version: '3.8'
 
 networks:
-  app-network:
+  fast-foodie-network:
     driver: bridge
 
 services:
-  template-db:
+  fast-foodie-db:
     image: 'postgres:14.5-alpine'
     command: postgres -c 'max_connections=1000'
     restart: always
-    container_name: template-db
+    container_name: fast-foodie-db
     environment:
       - POSTGRES_PASSWORD=${TYPEORM_PASSWORD}
       - POSTGRES_USER=${TYPEORM_USERNAME}
@@ -19,7 +19,7 @@ services:
     ports:
       - '5432:5432'
     networks:
-      - app-network
+      - fast-foodie-network
 
 volumes:
   db:

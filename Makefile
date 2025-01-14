@@ -18,25 +18,34 @@ db.create: ## Create database
 	@yarn migrate
 
 db.delete: ## Delete database
-	docker compose down && docker volume rm -f api-template_db && rm -rf ./public/files && rm -rf ./src/migrations/
+	docker compose down && docker volume rm -f fast-foodie-api_db && rm -rf ./public/files
 
 db.start: ## Start database
-	docker start template-db
+	docker start fast-foodie-db
 	
 db.stop: ## Stop database
-	docker stop template-db
+	docker stop fast-foodie-db
 
 db.clean: ## Clean database
-	@echo "Removing old db_data..."
 	@make db.delete
-	@echo "Starting Docker Compose..."
-	@docker-compose up -d
-	@echo "Sleeping for 5 seconds..."
-	@sleep 5
-	@echo "Running make migration..."
-	@yarn migrate
-	@echo "Start server..."
+	@make db.create
 	@make start
+
+db.export: ## Export database
+	@echo "Exporting database..."
+	@docker exec -i fast-foodie-db pg_dump -U fast-foodie-db fast-foodie-db > sakana_san.sql
+
+db.import: ## Import database
+	@echo "Importing database..."
+	@docker exec -i fast-foodie-db psql -U fast-foodie-db fast-foodie-db < sakana_san.sql
+
+db.reset: ## Reset database
+	@echo "Resetting database..."
+	@make db.export
+	@make db.delete
+	@make db.create
+	@make start
+	@make db.import
 
 #-- TYPEORM
 module.create: ## Create module
@@ -60,13 +69,13 @@ module.create: ## Create module
 
 #-- DOCKER
 docker.build: ## Build docker image
-	docker build --platform=linux/amd64 -t template-api:latest .  
+	docker build --platform=linux/amd64 -t fast-foodie-api:latest .  
 
 docker.tag: ## Tag docker image
-	docker tag template-api:latest noephilippe/template-api:latest
+	docker tag fast-foodie-api:latest noephilippe/fast-foodie-api:latest
 
 docker.push: ## Push docker image
-	docker push noephilippe/template-api:latest
+	docker push noephilippe/fast-foodie-api:latest
 
 docker.new: ## Build, tag and push docker image
 	make docker.build
@@ -75,4 +84,5 @@ docker.new: ## Build, tag and push docker image
 
 #-- DEPLOY
 deploy: ## Deploy on server
+	make docker.new 
 	ansible-playbook -i inventory.ini deploy.yml

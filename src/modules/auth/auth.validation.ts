@@ -7,16 +7,16 @@ import { UserService } from '../user/user.service';
 export class AuthValidation {
   constructor(private userRepository: UserService) {}
 
-  async validateUser(email: string, password: string): Promise<any> {
-    const user = await this.userRepository.getOneByEmail(email);
+  async validateUser(userName: string, password: string): Promise<any> {
+    const user = await this.userRepository.getOneByUsername(userName);
     if (user && (await this.comparePassword(user.password, password))) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { password: __password, ...result } = user;
       return result;
     }
-    throw new NotFoundException(
-      errorMessage.api('user').NOT_FOUND_OR_WRONG_PASSWORD,
-    );
+    throw new NotFoundException({
+      message: errorMessage.api('user').NOT_FOUND_OR_WRONG_PASSWORD,
+    });
   }
 
   async comparePassword(
