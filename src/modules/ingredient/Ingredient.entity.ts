@@ -6,9 +6,14 @@ import { Food } from '../food/Food.entity';
 @Entity()
 export class Ingredient extends BaseEntity {
   @Column({ nullable: false })
-  quantity: string;
+  quantity: number;
 
-  @ManyToOne(() => Food, (food) => food.ingredients)
+  @Column({ nullable: true })
+  unit: string;
+
+  @ManyToOne(() => Food, (food) => food.ingredients, {
+    onDelete: 'CASCADE',
+  })
   food: Food;
 
   @ManyToOne(() => Dish, (dish) => dish.ingredients, {

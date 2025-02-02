@@ -33,6 +33,11 @@ const add: yup.ObjectSchema<CreateDishApi> = yup.object({
     .required(errorMessage.fields('status').REQUIRED)
     .transform((value) => (value === '' ? undefined : value))
     .default(DishStatus.PUBLIC),
+  favoriteImage: yup
+    .string()
+    .optional()
+    .transform((value) => (value === '' ? undefined : value))
+    .default(undefined),
   imageIds: yup
     .array()
     .of(
@@ -59,14 +64,14 @@ const add: yup.ObjectSchema<CreateDishApi> = yup.object({
           .required(errorMessage.fields('foodId').REQUIRED)
           .typeError(errorMessage.fields('foodId').NOT_STRING),
         quantity: yup
-          .string()
+          .number()
           .required(errorMessage.fields('quantity').REQUIRED)
           .typeError(errorMessage.fields('quantity').NOT_STRING),
-        ration: yup
-          .number()
-          .required(errorMessage.fields('ration').REQUIRED)
-          .typeError(errorMessage.fields('ration').NOT_NUMBER)
-          .default(2),
+        unit: yup
+          .string()
+          .optional()
+          .transform((value) => (value === '' ? undefined : value))
+          .default(undefined),
       }),
     )
     .required(errorMessage.fields('ingredients').REQUIRED)
@@ -85,6 +90,11 @@ const update: yup.ObjectSchema<UpdateDishApi> = yup.object({
     .transform((value) => (value === '' ? undefined : value))
     .default(2),
   instructions: yup
+    .string()
+    .optional()
+    .transform((value) => (value === '' ? undefined : value))
+    .default(undefined),
+  favoriteImage: yup
     .string()
     .optional()
     .transform((value) => (value === '' ? undefined : value))
@@ -132,12 +142,12 @@ const update: yup.ObjectSchema<UpdateDishApi> = yup.object({
           .transform((value) => (value === '' ? undefined : value))
           .default(undefined),
         quantity: yup
-          .string()
+          .number()
           .optional()
           .transform((value) => (value === '' ? undefined : value))
           .default(undefined),
-        ration: yup
-          .number()
+        unit: yup
+          .string()
           .optional()
           .transform((value) => (value === '' ? undefined : value))
           .default(undefined),

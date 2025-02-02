@@ -17,6 +17,9 @@ export class Food extends BaseEntity {
   @ManyToOne(() => User, (user) => user.foods)
   user: User;
 
-  @OneToMany(() => Ingredient, (ingredient) => ingredient.food)
+  @OneToMany(() => Ingredient, (ingredient) => ingredient.food, {
+    nullable: true,
+    onDelete: 'CASCADE',
+  })
   ingredients: Ingredient[];
 }

@@ -9,6 +9,7 @@ import { AuthMiddleware } from '../auth/auth.middleware';
 import { AuthModule } from '../auth/auth.module';
 import { DishModule } from '../dish/dish.module';
 import { FoodModule } from '../food/food.module';
+import { MediaModule } from '../media/media.module';
 import { UserController } from './user.controller';
 import { User } from './user.entity';
 import { UserService } from './user.service';
@@ -19,6 +20,7 @@ import { UserService } from './user.service';
     forwardRef(() => AuthModule),
     forwardRef(() => FoodModule),
     forwardRef(() => DishModule),
+    forwardRef(() => MediaModule),
   ],
   providers: [UserService],
   controllers: [UserController],
@@ -29,13 +31,8 @@ export class UserModule {
     consumer
       .apply(AuthMiddleware)
       .forRoutes(
-        { path: '/users', method: RequestMethod.DELETE },
-        { path: '/users', method: RequestMethod.PATCH },
-        { path: '/users', method: RequestMethod.POST },
-        { path: '/users/*', method: RequestMethod.DELETE },
-        { path: '/users/*', method: RequestMethod.PATCH },
-        { path: '/users/*', method: RequestMethod.POST },
-        { path: '/users/me', method: RequestMethod.GET },
+        { path: '/users', method: RequestMethod.ALL },
+        { path: '/users/*', method: RequestMethod.ALL },
       );
   }
 }

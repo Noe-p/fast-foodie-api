@@ -1,7 +1,15 @@
-import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+} from 'typeorm';
 import { BaseEntity } from '../base.entity';
 import { Dish } from '../dish/Dish.entity';
 import { Food } from '../food/Food.entity';
+import { Media } from '../media/media.entity';
 
 @Entity()
 export class User extends BaseEntity {
@@ -10,6 +18,10 @@ export class User extends BaseEntity {
 
   @Column({ nullable: false })
   password: string;
+
+  @OneToOne(() => Media, { cascade: true, eager: true, nullable: true })
+  @JoinColumn()
+  profilePicture: Media;
 
   // Relation entre un utilisateur et ses collaborateurs
   @OneToMany(() => User, (user) => user.manager)

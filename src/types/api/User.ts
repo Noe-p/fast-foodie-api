@@ -1,4 +1,5 @@
 export interface UpdateUserApi {
   userName?: string;
-  collaboratorIds?: string[];
+  collaboratorName?: string;
+  profilePicture?: string;
 }

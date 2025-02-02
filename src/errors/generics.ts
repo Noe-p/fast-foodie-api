@@ -36,6 +36,7 @@ const api = (item: string) => ({
   EMAIL_REQUIRED: `errors:api.${item}.emailRequired`,
   ALREADY_ADDED: `errors:api.${item}.alreadyAdded`,
   NOT_URL: `errors:api.${item}.notUrl`,
+  IS_SIMILAR: `errors:api.${item}.isSimilar`,
 });
 
 const valid = (item: string) => ({

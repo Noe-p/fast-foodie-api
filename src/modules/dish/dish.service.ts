@@ -1,10 +1,10 @@
 import { errorMessage } from '@/errors';
-import { CreateDishApi, UpdateDishApi } from '@/types/api/Dish';
+import { CreateDishApi, DishStatus, UpdateDishApi } from '@/types/api/Dish';
 import { CreateIngredientApi } from '@/types/api/Ingredient';
 import { DishDto } from '@/types/dto/Dish';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Raw, Repository } from 'typeorm';
 import { Ingredient } from '../ingredient/Ingredient.entity';
 import { Media } from '../media/media.entity';
 import { MediaService } from '../media/media.service';
@@ -28,14 +28,17 @@ export class DishService {
       id: dish.id,
       name: dish.name,
       instructions: dish.instructions,
-      ingredients: dish.ingredients.map((ingredient) =>
-        this.ingredientService.formatFood(ingredient),
-      ),
+      ingredients:
+        dish.ingredients?.map((ingredient) =>
+          this.ingredientService.formatFood(ingredient),
+        ) ?? [],
       status: dish.status,
       chef: this.userService.formatUser(dish.chef),
       tags: dish.tags,
       ration: dish.ration,
-      images: dish.images.map((image) => this.mediaService.formatMedia(image)),
+      images:
+        dish.images?.map((image) => this.mediaService.formatMedia(image)) ?? [],
+      favoriteImage: dish.favoriteImage,
       weeklyDish: dish.weeklyDish,
       updatedAt: dish.updatedAt,
       createdAt: dish.createdAt,
@@ -46,17 +49,27 @@ export class DishService {
     try {
       if (!user)
         throw new BadRequestException(errorMessage.api('user').NOT_FOUND);
+
+      // Récupérer les collaborateurs de l'utilisateur
+      const collaborators = await this.userService.getCollaborators(user);
+
+      // Inclure l'utilisateur et ses collaborateurs dans la recherche des dishes
+      const userIds = [user.id, ...collaborators.map((c) => c.id)];
+
+      // Récupérer les dishes qui sont soit de l'utilisateur, soit des collaborateurs, et dont le statut est 'PUBLIC'
       const dishes = await this.dishRepository.find({
-        where: {
-          chef: { id: user.id },
-        },
+        where: [
+          { chef: { id: In(userIds) }, status: DishStatus.PUBLIC },
+          { chef: { id: user.id } }, // Inclure tous les dishes de l'utilisateur
+        ],
         relations: ['chef', 'ingredients', 'images', 'ingredients.food'],
       });
+
       return dishes;
     } catch (error) {
       throw new BadRequestException({
         ...error,
-        message: errorMessage.api('dish').NOT_FOUND,
+        title: errorMessage.api('dish').NOT_FOUND,
       });
     }
   }
@@ -73,7 +86,7 @@ export class DishService {
     } catch (error) {
       throw new BadRequestException({
         ...error,
-        message: errorMessage.api('dish').NOT_FOUND,
+        title: errorMessage.api('dish').NOT_FOUND,
       });
     }
   }
@@ -86,26 +99,41 @@ export class DishService {
       });
       return { ...dish };
     } catch (error) {
-      throw new BadRequestException(errorMessage.api('dish').NOT_FOUND);
+      throw new BadRequestException({
+        ...error,
+        title: errorMessage.api('dish').NOT_FOUND,
+      });
     }
   }
 
   async createDish(dish: CreateDishApi, user: User): Promise<Dish> {
     try {
-      const { name, instructions, tags, status, weeklyDish, ration } = dish;
+      const {
+        name,
+        instructions,
+        tags,
+        status,
+        weeklyDish,
+        favoriteImage,
+        ration,
+      } = dish;
+
       let images: Media[];
-      if (dish.imageIds) {
+      if (dish.imageIds && dish.imageIds.length > 0) {
         images = await Promise.all(
           dish.imageIds.map((imageId) =>
             this.mediaService.getMediaById(imageId),
           ),
         );
       }
-      const ingredients = await Promise.all(
-        dish.ingredients.map((ingredient) =>
-          this.ingredientService.createIngredient(ingredient),
-        ),
-      );
+      let ingredients: Ingredient[];
+      if (dish.ingredients && dish.ingredients.length > 0) {
+        ingredients = await Promise.all(
+          dish.ingredients?.map((ingredient) =>
+            this.ingredientService.createIngredient(ingredient),
+          ),
+        );
+      }
       return await this.dishRepository.save({
         name,
         instructions,
@@ -116,18 +144,18 @@ export class DishService {
         chef: user,
         ingredients,
         images,
+        favoriteImage,
       });
     } catch (error) {
       throw new BadRequestException({
         ...error,
-        message: errorMessage.api('dish').NOT_CREATED,
+        title: errorMessage.api('dish').NOT_CREATED,
       });
     }
   }
 
   async updateDish(data: UpdateDishApi, _id: string): Promise<Dish> {
     try {
-      console.log('[D] dish.service', data);
       const { imageIds, ingredients, ...dishData } = data;
 
       const dish = await this.getOneById(_id);
@@ -153,9 +181,9 @@ export class DishService {
             });
 
             if (!food) {
-              throw new BadRequestException(
-                errorMessage.api('ingredient').NOT_FOUND,
-              );
+              throw new BadRequestException({
+                message: errorMessage.api('ingredient').NOT_FOUND,
+              });
             }
             return this.ingredientService.createIngredient({
               ...ingredient,
@@ -190,7 +218,30 @@ export class DishService {
     } catch (error) {
       throw new BadRequestException({
         error,
-        message: errorMessage.api('dish').NOT_UPDATED,
+        title: errorMessage.api('dish').NOT_UPDATED,
+      });
+    }
+  }
+
+  async removeTag(tag: string, user: User): Promise<void> {
+    try {
+      const dishes = await this.dishRepository.find({
+        where: {
+          chef: { id: user.id },
+          tags: Raw((alias) => `:tag = ANY(${alias})`, { tag }),
+        },
+      });
+
+      await Promise.all(
+        dishes.map((dish) => {
+          dish.tags = dish.tags.filter((t) => t !== tag);
+          return this.dishRepository.save(dish);
+        }),
+      );
+    } catch (error) {
+      throw new BadRequestException({
+        ...error,
+        title: errorMessage.api('tag').NOT_DELETED,
       });
     }
   }
@@ -207,7 +258,7 @@ export class DishService {
     } catch (error) {
       throw new BadRequestException({
         ...error,
-        message: errorMessage.api('dish').NOT_DELETED,
+        title: errorMessage.api('dish').NOT_DELETED,
       });
     }
   }

@@ -1,4 +1,5 @@
 import { ApiKeyGuard } from '@/decorators/api-key.decorator';
+import { errorMessage } from '@/errors';
 import { CreateFoodApi, UpdateFoodApi } from '@/types/api/Food';
 import { FoodDto } from '@/types/dto/Food';
 import { foodValidation } from '@/validations/Food';
@@ -57,7 +58,11 @@ export class FoodController {
       });
       return this.service.formatFood(await this.service.createFood(body, user));
     } catch (e) {
-      throw new BadRequestException(e.errors);
+      throw new BadRequestException({
+        ...e,
+        errors: e.errors,
+        title: errorMessage.api('food').NOT_CREATED,
+      });
     }
   }
 
@@ -78,7 +83,11 @@ export class FoodController {
         await this.service.updateFood(body, user, id),
       );
     } catch (e) {
-      throw new BadRequestException(e.errors);
+      throw new BadRequestException({
+        ...e,
+        errors: e.errors,
+        title: errorMessage.api('food').NOT_UPDATED,
+      });
     }
   }
 

@@ -8,21 +8,31 @@ import { errorMessage } from '../errors';
 const add: yup.ObjectSchema<CreateIngredientApi> = yup.object({
   foodId: yup
     .string()
-    .required(errorMessage.fields('id').REQUIRED)
-    .typeError(errorMessage.fields('id').NOT_STRING),
+    .required(errorMessage.fields('foodId').REQUIRED)
+    .typeError(errorMessage.fields('foodId').NOT_STRING),
   quantity: yup
-    .string()
+    .number()
     .required(errorMessage.fields('quantity').REQUIRED)
     .typeError(errorMessage.fields('quantity').NOT_STRING),
-});
-
-const update: yup.ObjectSchema<UpdateIngredientApi> = yup.object({
-  quantity: yup
+  unit: yup
     .string()
     .optional()
     .transform((value) => (value === '' ? undefined : value))
     .default(undefined),
+});
+
+const update: yup.ObjectSchema<UpdateIngredientApi> = yup.object({
   foodId: yup
+    .string()
+    .optional()
+    .transform((value) => (value === '' ? undefined : value))
+    .default(undefined),
+  quantity: yup
+    .number()
+    .optional()
+    .transform((value) => (value === '' ? undefined : value))
+    .default(undefined),
+  unit: yup
     .string()
     .optional()
     .transform((value) => (value === '' ? undefined : value))

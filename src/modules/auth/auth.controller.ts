@@ -1,3 +1,4 @@
+import { errorMessage } from '@/errors';
 import { AuthLoginApi, RegisterApi } from '@/types';
 import { userValidation } from '@/validations';
 import {
@@ -34,7 +35,11 @@ export class AuthController {
       });
       return await this.authService.login(body);
     } catch (e) {
-      throw new BadRequestException(e);
+      throw new BadRequestException({
+        ...e,
+        title: errorMessage.api('user').VALIDATION,
+        errors: e.errors,
+      });
     }
   }
 
@@ -49,7 +54,11 @@ export class AuthController {
       const { access_token } = await this.authService.register(body);
       return access_token;
     } catch (e) {
-      throw new BadRequestException(e);
+      throw new BadRequestException({
+        ...e,
+        title: errorMessage.api('user').NOT_CREATED,
+        errors: e.errors,
+      });
     }
   }
 }

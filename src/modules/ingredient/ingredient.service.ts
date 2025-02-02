@@ -23,6 +23,7 @@ export class IngredientService {
     return {
       id: ingredient.id,
       quantity: ingredient.quantity,
+      unit: ingredient.unit,
       food: ingredient.food,
       updatedAt: ingredient.updatedAt,
       createdAt: ingredient.createdAt,
@@ -36,7 +37,10 @@ export class IngredientService {
       });
       return { ...ingredient };
     } catch (error) {
-      throw new BadRequestException(errorMessage.api('ingredient').NOT_FOUND);
+      throw new BadRequestException({
+        ...error,
+        title: errorMessage.api('ingredient').NOT_FOUND,
+      });
     }
   }
 
@@ -46,9 +50,13 @@ export class IngredientService {
       return await this.ingredientRepository.save({
         quantity: ingredient.quantity,
         food,
+        unit: ingredient.unit,
       });
     } catch (error) {
-      throw new BadRequestException(errorMessage.api('ingredient').NOT_CREATED);
+      throw new BadRequestException({
+        ...error,
+        title: errorMessage.api('ingredient').NOT_CREATED,
+      });
     }
   }
 
@@ -60,7 +68,10 @@ export class IngredientService {
       await this.ingredientRepository.update(_id, ingredient);
       return await this.getOneById(_id);
     } catch (error) {
-      throw new BadRequestException(errorMessage.api('ingredient').NOT_UPDATED);
+      throw new BadRequestException({
+        ...error,
+        title: errorMessage.api('ingredient').NOT_UPDATED,
+      });
     }
   }
 
@@ -70,7 +81,7 @@ export class IngredientService {
     } catch (error) {
       throw new BadRequestException({
         ...error,
-        message: errorMessage.api('ingredient').NOT_DELETED,
+        title: errorMessage.api('ingredient').NOT_DELETED,
       });
     }
   }

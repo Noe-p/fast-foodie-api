@@ -1,7 +1,7 @@
 import { errorMessage } from '@/errors';
 import { CreateFoodApi, UpdateFoodApi } from '@/types/api/Food';
 import { FoodDto } from '@/types/dto/Food';
-import { getFoodIcon } from '@/utils';
+import { areSimilar, getFoodIcon } from '@/utils';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -40,7 +40,7 @@ export class FoodService {
     } catch (error) {
       throw new BadRequestException({
         ...error,
-        message: errorMessage.api('food').NOT_CREATED,
+        title: errorMessage.api('food').NOT_CREATED,
       });
     }
   }
@@ -57,7 +57,10 @@ export class FoodService {
       });
       return foods;
     } catch (error) {
-      throw new BadRequestException(errorMessage.api('food').NOT_FOUND);
+      throw new BadRequestException({
+        ...error,
+        title: errorMessage.api('food').NOT_FOUND,
+      });
     }
   }
 
@@ -68,14 +71,26 @@ export class FoodService {
       });
       return food;
     } catch (error) {
-      throw new BadRequestException(errorMessage.api('food').NOT_FOUND);
+      throw new BadRequestException({
+        ...error,
+        title: errorMessage.api('food').NOT_FOUND,
+      });
     }
   }
 
   async createFood(food: CreateFoodApi, user: User): Promise<Food> {
     try {
-      const alreadyCreated = await this.checkIfTheNameExist(food.name, user);
-      if (alreadyCreated) return alreadyCreated;
+      const existingFoods = await this.getFood(user);
+
+      const isDuplicate = existingFoods.some((existingFood) =>
+        areSimilar(existingFood.name, food.name),
+      );
+
+      if (isDuplicate) {
+        throw new BadRequestException({
+          message: errorMessage.api('food').IS_SIMILAR,
+        });
+      }
       const icon = getFoodIcon(food.name);
       return await this.foodRepository.save({
         ...food,
@@ -85,7 +100,7 @@ export class FoodService {
     } catch (error) {
       throw new BadRequestException({
         ...error,
-        message: errorMessage.api('food').NOT_CREATED,
+        title: errorMessage.api('food').NOT_CREATED,
       });
     }
   }
@@ -103,7 +118,10 @@ export class FoodService {
       });
       return await this.getOneById(_id);
     } catch (error) {
-      throw new BadRequestException(errorMessage.api('food').NOT_UPDATED);
+      throw new BadRequestException({
+        ...error,
+        title: errorMessage.api('food').NOT_UPDATED,
+      });
     }
   }
 
@@ -111,7 +129,10 @@ export class FoodService {
     try {
       await this.foodRepository.delete(_id);
     } catch (error) {
-      throw new BadRequestException(errorMessage.api('food').NOT_DELETED);
+      throw new BadRequestException({
+        ...error,
+        title: errorMessage.api('food').NOT_DELETED,
+      });
     }
   }
 }

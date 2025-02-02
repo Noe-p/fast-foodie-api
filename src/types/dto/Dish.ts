@@ -14,4 +14,5 @@ export interface DishDto extends BaseDto {
   weeklyDish: boolean;
   status: DishStatus;
   ration: number;
+  favoriteImage?: string;
 }

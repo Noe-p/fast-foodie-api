@@ -35,6 +35,9 @@ export class Dish extends BaseEntity {
   })
   images?: Media[];
 
+  @Column({ nullable: true })
+  favoriteImage: string;
+
   @ManyToOne(() => User, (user) => user.dishes, {
     nullable: false,
     onDelete: 'CASCADE',

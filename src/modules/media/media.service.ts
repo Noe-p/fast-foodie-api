@@ -46,7 +46,10 @@ export class MediaService {
       const medias = await this.mediaRepository.find();
       return medias.map((media) => this.formatMedia(media));
     } catch (e) {
-      throw new BadRequestException(errorMessage.api('media').NOT_FOUND);
+      throw new BadRequestException({
+        ...e,
+        title: errorMessage.api('media').NOT_FOUND,
+      });
     }
   }
 
@@ -58,7 +61,8 @@ export class MediaService {
       return media;
     } catch (e) {
       throw new BadRequestException({
-        message: errorMessage.api('media').NOT_FOUND,
+        ...e,
+        title: errorMessage.api('media').NOT_FOUND,
         _id,
       });
     }
@@ -72,7 +76,8 @@ export class MediaService {
       return medias.map((media) => this.formatMedia(media));
     } catch (e) {
       throw new BadRequestException({
-        message: errorMessage.api('media').NOT_FOUND,
+        ...e,
+        title: errorMessage.api('media').NOT_FOUND,
       });
     }
   }

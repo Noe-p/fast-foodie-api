@@ -9,11 +9,17 @@ const update: yup.ObjectSchema<UpdateUserApi> = yup.object({
     .optional()
     .transform((value) => (value === '' ? undefined : value))
     .default(undefined),
-  collaboratorIds: yup
-    .array()
-    .of(yup.string())
+  collaboratorName: yup
+    .string()
+    .optional()
     .transform((value) => (value === '' ? undefined : value))
-    .default([]),
+    .default(undefined),
+  profilePicture: yup
+    .string()
+    .min(1, errorMessage.fields('profilePicture').REQUIRED)
+    .optional()
+    .transform((value) => (value === '' ? undefined : value))
+    .default(undefined),
 });
 
 const create: yup.ObjectSchema<RegisterApi> = yup.object({

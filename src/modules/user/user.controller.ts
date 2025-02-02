@@ -1,3 +1,4 @@
+import { errorMessage } from '@/errors';
 import { UpdateUserApi, UserDto } from '@/types';
 import { userValidation } from '@/validations';
 import {
@@ -9,6 +10,7 @@ import {
   Get,
   HttpCode,
   Inject,
+  Param,
   Patch,
   UseGuards,
 } from '@nestjs/common';
@@ -48,8 +50,23 @@ export class UserController {
       const userUpdated = await this.service.updateUser(body, user.id);
       return this.service.formatUser(userUpdated);
     } catch (e) {
-      throw new BadRequestException(e.errors);
+      throw new BadRequestException({
+        ...e,
+        errors: e.errors,
+        title: errorMessage.api('user').NOT_UPDATED,
+      });
     }
+  }
+
+  @Delete('me/collaborators/:collaboratorId')
+  @HttpCode(204)
+  @UseGuards(ApiKeyGuard)
+  @ApiBearerAuth()
+  RemoveCollaborator(
+    @GetCurrentUser() user: User,
+    @Param('collaboratorId') collaboratorId: string,
+  ): void {
+    this.service.removeCollaborator(user.id, collaboratorId);
   }
 
   @Delete('me')

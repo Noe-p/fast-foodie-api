@@ -14,6 +14,7 @@ import { UserModule } from './modules/user/user.module';
 import { FoodModule } from './modules/food/food.module';
 import { IngredientModule } from './modules/ingredient/ingredient.module';
 import { DishModule } from './modules/dish/dish.module';
+import { CollaboratorModule } from './modules/collaborator/collaborator.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { DishModule } from './modules/dish/dish.module';
     FoodModule,
     IngredientModule,
     DishModule,
+    CollaboratorModule,
   ],
   controllers: [AppController],
   providers: [AppService],

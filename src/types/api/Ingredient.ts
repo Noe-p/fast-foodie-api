@@ -1,9 +1,11 @@
 export interface CreateIngredientApi {
-  quantity?: string;
+  quantity?: number;
   foodId?: string;
+  unit?: string;
 }
 
 export interface UpdateIngredientApi {
   foodId?: string;
-  quantity?: string;
+  quantity?: number;
+  unit?: string;
 }

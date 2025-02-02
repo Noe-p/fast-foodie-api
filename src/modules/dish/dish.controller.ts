@@ -1,5 +1,6 @@
 import { ApiKeyGuard } from '@/decorators/api-key.decorator';
 import { GetCurrentUser } from '@/decorators/get-current-user.decorator';
+import { errorMessage } from '@/errors';
 import { CreateDishApi, DishDto, UpdateDishApi } from '@/types';
 import { dishValidation } from '@/validations';
 import {
@@ -64,7 +65,11 @@ export class DishController {
       });
       return this.service.formatDish(await this.service.createDish(body, user));
     } catch (e) {
-      throw new BadRequestException(e);
+      throw new BadRequestException({
+        ...e,
+        errors: e.errors,
+        title: errorMessage.api('dish').NOT_CREATED,
+      });
     }
   }
 
@@ -81,8 +86,18 @@ export class DishController {
     } catch (e) {
       throw new BadRequestException({
         ...e,
+        title: errorMessage.api('dish').NOT_UPDATED,
+        errors: e.errors,
       });
     }
+  }
+
+  @Delete('tag/:tag')
+  @HttpCode(204)
+  @UseGuards(ApiKeyGuard)
+  @ApiBearerAuth()
+  deleteTag(@GetCurrentUser() user: User, @Param('tag') tag: string) {
+    return this.service.removeTag(tag, user);
   }
 
   @Delete(':id')

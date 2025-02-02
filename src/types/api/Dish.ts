@@ -13,6 +13,7 @@ export interface CreateDishApi {
   status: DishStatus;
   weeklyDish: boolean;
   ration: number;
+  favoriteImage?: string;
 }
 
 export interface UpdateDishApi {
@@ -24,4 +25,5 @@ export interface UpdateDishApi {
   status?: DishStatus;
   weeklyDish?: boolean;
   ration?: number;
+  favoriteImage?: string;
 }
