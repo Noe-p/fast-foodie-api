@@ -37,6 +37,7 @@ const api = (item: string) => ({
   ALREADY_ADDED: `errors:api.${item}.alreadyAdded`,
   NOT_URL: `errors:api.${item}.notUrl`,
   IS_SIMILAR: `errors:api.${item}.isSimilar`,
+  ALREADY_PENDING: `errors:api.${item}.alreadyPending`,
 });
 
 const valid = (item: string) => ({

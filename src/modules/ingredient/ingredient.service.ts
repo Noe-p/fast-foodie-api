@@ -24,7 +24,7 @@ export class IngredientService {
       id: ingredient.id,
       quantity: ingredient.quantity,
       unit: ingredient.unit,
-      food: ingredient.food,
+      food: this.foodService.formatFood(ingredient.food),
       updatedAt: ingredient.updatedAt,
       createdAt: ingredient.createdAt,
     };

@@ -7,6 +7,7 @@ import {
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthMiddleware } from '../auth/auth.middleware';
 import { AuthModule } from '../auth/auth.module';
+import { CollaboratorModule } from '../collaborator/collaborator.module';
 import { FoodModule } from '../food/food.module';
 import { IngredientModule } from '../ingredient/ingredient.module';
 import { MediaModule } from '../media/media.module';
@@ -23,6 +24,7 @@ import { DishService } from './dish.service';
     forwardRef(() => FoodModule),
     forwardRef(() => MediaModule),
     forwardRef(() => IngredientModule),
+    forwardRef(() => CollaboratorModule),
   ],
   providers: [DishService],
   controllers: [DishController],

@@ -1,3 +1,10 @@
-export interface CreateCollaboratorApi {}
+import { CollaboratorType } from '../dto';
 
-export interface UpdateCollaboratorApi {}
+export interface CreateCollaboratorApi {
+  userName: string;
+  type: CollaboratorType;
+}
+
+export interface UpdateCollaboratorApi {
+  type: CollaboratorType;
+}

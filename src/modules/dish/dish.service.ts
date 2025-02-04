@@ -5,6 +5,7 @@ import { DishDto } from '@/types/dto/Dish';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Raw, Repository } from 'typeorm';
+import { CollaboratorService } from '../collaborator/collaborator.service';
 import { Ingredient } from '../ingredient/Ingredient.entity';
 import { Media } from '../media/media.entity';
 import { MediaService } from '../media/media.service';
@@ -20,6 +21,7 @@ export class DishService {
     private ingredientService: IngredientService,
     private mediaService: MediaService,
     private userService: UserService,
+    private collaboratorService: CollaboratorService,
   ) {}
 
   formatDish(dish: Dish): DishDto {
@@ -51,7 +53,15 @@ export class DishService {
         throw new BadRequestException(errorMessage.api('user').NOT_FOUND);
 
       // Récupérer les collaborateurs de l'utilisateur
-      const collaborators = await this.userService.getCollaborators(user);
+      const sender = user.collaborators.map((collaborator) =>
+        this.userService.formatUser(collaborator.sender),
+      );
+
+      const receiver = user.collabSend.map((collaborator) =>
+        this.userService.formatUser(collaborator.receveid),
+      );
+
+      const collaborators = [...sender, ...receiver];
 
       // Inclure l'utilisateur et ses collaborateurs dans la recherche des dishes
       const userIds = [user.id, ...collaborators.map((c) => c.id)];

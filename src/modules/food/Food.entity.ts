@@ -14,7 +14,10 @@ export class Food extends BaseEntity {
   @Column({ nullable: false })
   icon: string;
 
-  @ManyToOne(() => User, (user) => user.foods)
+  @ManyToOne(() => User, (user) => user.foods, {
+    eager: true,
+    nullable: false,
+  })
   user: User;
 
   @OneToMany(() => Ingredient, (ingredient) => ingredient.food, {

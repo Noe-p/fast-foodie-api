@@ -54,6 +54,7 @@ export class AuthController {
       const { access_token } = await this.authService.register(body);
       return access_token;
     } catch (e) {
+      console.log('[D] auth.controller', e);
       throw new BadRequestException({
         ...e,
         title: errorMessage.api('user').NOT_CREATED,

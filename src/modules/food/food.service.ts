@@ -1,4 +1,5 @@
 import { errorMessage } from '@/errors';
+import { CollaboratorType } from '@/types';
 import { CreateFoodApi, UpdateFoodApi } from '@/types/api/Food';
 import { FoodDto } from '@/types/dto/Food';
 import { areSimilar, getFoodIcon } from '@/utils';
@@ -49,13 +50,53 @@ export class FoodService {
     try {
       if (!user)
         throw new BadRequestException(errorMessage.api('user').NOT_FOUND);
+
+      // Récupérer tous les collaborateurs de l'utilisateur avec FULL_ACCESS
+      const collaboratorsWithFullAccess = user.collaborators.filter(
+        (collaborator) => collaborator.type === CollaboratorType.FULL_ACCESS,
+      );
+
+      // Récupérer les aliments de l'utilisateur
       const foods = await this.foodRepository.find({
         where: {
           user: { id: user.id },
         },
         relations: ['user'],
       });
-      return foods;
+
+      // Récupérer les aliments des collaborateurs en FULL_ACCESS
+      const userOfCollaborators = collaboratorsWithFullAccess.map(
+        (collaborator) => collaborator.sender,
+      );
+
+      const foodsOfCollaborators = await Promise.all(
+        userOfCollaborators
+          .flat()
+          .filter((u) => u.id !== user.id)
+          .map((u) =>
+            this.foodRepository.find({
+              where: { user: { id: u.id } },
+              relations: ['user'],
+            }),
+          ),
+      );
+
+      const foodsOfCollabSender = await Promise.all(
+        user.collabSend
+          .filter((c) => c.type === CollaboratorType.FULL_ACCESS)
+          .map((c) =>
+            this.foodRepository.find({
+              where: { user: { id: c.receveid.id } },
+              relations: ['user'],
+            }),
+          ),
+      );
+
+      return [
+        ...foods,
+        ...foodsOfCollaborators.flat(),
+        ...foodsOfCollabSender.flat(),
+      ];
     } catch (error) {
       throw new BadRequestException({
         ...error,

@@ -1,12 +1,6 @@
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  OneToMany,
-  OneToOne,
-} from 'typeorm';
+import { Column, Entity, JoinColumn, OneToMany, OneToOne } from 'typeorm';
 import { BaseEntity } from '../base.entity';
+import { Collaborator } from '../collaborator/Collaborator.entity';
 import { Dish } from '../dish/Dish.entity';
 import { Food } from '../food/Food.entity';
 import { Media } from '../media/media.entity';
@@ -23,13 +17,19 @@ export class User extends BaseEntity {
   @JoinColumn()
   profilePicture: Media;
 
-  // Relation entre un utilisateur et ses collaborateurs
-  @OneToMany(() => User, (user) => user.manager)
-  collaborators: User[];
+  @OneToMany(() => Collaborator, (collab) => collab.receveid, {
+    onDelete: 'CASCADE',
+    nullable: true,
+  })
+  @JoinColumn()
+  collaborators: Collaborator[];
 
-  // Relation inverse pour le manager
-  @ManyToOne(() => User, (user) => user.collaborators, { nullable: true })
-  manager: User | null;
+  @OneToMany(() => Collaborator, (collab) => collab.sender, {
+    onDelete: 'CASCADE',
+    nullable: true,
+  })
+  @JoinColumn()
+  collabSend: Collaborator[];
 
   @OneToMany(() => Food, (food) => food.user, {
     onDelete: 'SET NULL',

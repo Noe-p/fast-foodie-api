@@ -10,7 +10,6 @@ import {
   Get,
   HttpCode,
   Inject,
-  Param,
   Patch,
   UseGuards,
 } from '@nestjs/common';
@@ -56,17 +55,6 @@ export class UserController {
         title: errorMessage.api('user').NOT_UPDATED,
       });
     }
-  }
-
-  @Delete('me/collaborators/:collaboratorId')
-  @HttpCode(204)
-  @UseGuards(ApiKeyGuard)
-  @ApiBearerAuth()
-  RemoveCollaborator(
-    @GetCurrentUser() user: User,
-    @Param('collaboratorId') collaboratorId: string,
-  ): void {
-    this.service.removeCollaborator(user.id, collaboratorId);
   }
 
   @Delete('me')
