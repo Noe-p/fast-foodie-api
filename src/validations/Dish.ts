@@ -65,11 +65,11 @@ const add: yup.ObjectSchema<CreateDishApi> = yup.object({
           .typeError(errorMessage.fields('foodId').NOT_STRING),
         quantity: yup
           .number()
-          .required(errorMessage.fields('quantity').REQUIRED)
-          .typeError(errorMessage.fields('quantity').NOT_STRING),
+          .optional()
+          .typeError(errorMessage.fields('quantity').NOT_STRING)
+          .default(undefined),
         unit: yup
           .string()
-          .optional()
           .transform((value) => (value === '' ? undefined : value))
           .default(undefined),
       }),

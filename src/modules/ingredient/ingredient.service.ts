@@ -22,8 +22,8 @@ export class IngredientService {
     if (!ingredient) return;
     return {
       id: ingredient.id,
-      quantity: ingredient.quantity,
-      unit: ingredient.unit,
+      quantity: ingredient.quantity ?? undefined,
+      unit: ingredient.unit ?? undefined,
       food: this.foodService.formatFood(ingredient.food),
       updatedAt: ingredient.updatedAt,
       createdAt: ingredient.createdAt,

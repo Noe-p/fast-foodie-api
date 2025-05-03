@@ -1,6 +1,6 @@
 ---
 - name: Déploiement de l'application avec Docker Compose
-  hosts: noep@sakana-san.fr
+  hosts: noep@noe-philippe.fr
 
   tasks:
     - name: Créer le répertoire fast-foodie s'il n'existe pas
