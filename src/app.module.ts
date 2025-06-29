@@ -8,13 +8,13 @@ import { join } from 'path';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './modules/auth/auth.module';
+import { CollaboratorModule } from './modules/collaborator/collaborator.module';
+import { DishModule } from './modules/dish/dish.module';
 import { FileUploadModule } from './modules/file-upload/file-upload.module';
-import { MediaModule } from './modules/media/media.module';
-import { UserModule } from './modules/user/user.module';
 import { FoodModule } from './modules/food/food.module';
 import { IngredientModule } from './modules/ingredient/ingredient.module';
-import { DishModule } from './modules/dish/dish.module';
-import { CollaboratorModule } from './modules/collaborator/collaborator.module';
+import { MediaModule } from './modules/media/media.module';
+import { UserModule } from './modules/user/user.module';
 
 @Module({
   imports: [
@@ -31,6 +31,11 @@ import { CollaboratorModule } from './modules/collaborator/collaborator.module';
     }),
     MulterModule.register({
       dest: './public/files',
+      limits: {
+        fileSize: 50 * 1024 * 1024, // 50MB
+        files: 1,
+        fieldSize: 50 * 1024 * 1024, // 50MB
+      },
     }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', '../public'),

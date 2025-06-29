@@ -99,7 +99,7 @@ export class MediaService {
     try {
       if (!file)
         throw new BadRequestException({
-          message: errorMessage.api('file').UNDEFINED,
+          message: errorMessage.api('media').UNDEFINED,
         });
       const fileName = file.filename;
       const type = this.fileUploadService.detectFileType(file.filename);

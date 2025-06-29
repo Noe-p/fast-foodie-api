@@ -18,7 +18,7 @@ db.create: ## Create database
 	@yarn migrate
 
 db.delete: ## Delete database
-	docker compose down && docker volume rm -f fast-foodie-api_db && rm -rf ./public/files
+	docker compose down && docker volume rm -f fast-foodie-api_db && rm -rf ./public/files && rm -f ./src/migrations/*.ts
 
 db.start: ## Start database
 	docker start fast-foodie-db
