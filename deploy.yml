@@ -27,6 +27,21 @@
       register: copy_env_result
       ignore_errors: yes
 
+    - name: Copier les scripts de sauvegarde
+      become_user: noep
+      copy:
+        src: scripts/
+        dest: ~/fast-foodie/scripts/
+        mode: '0755'
+      register: copy_scripts_result
+      ignore_errors: yes
+
+    - name: Configurer les sauvegardes automatiques
+      become_user: noep
+      command: ~/fast-foodie/scripts/setup-backup-cron.sh daily 02:00
+      register: setup_backup_result
+      ignore_errors: yes
+
     - name: Arrêter le service Docker
       become_user: noep
       command: docker compose -f ~/fast-foodie/docker-compose.api.yml down

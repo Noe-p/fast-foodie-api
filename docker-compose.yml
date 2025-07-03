@@ -21,5 +21,30 @@ services:
     networks:
       - fast-foodie-network
 
+  fast-foodie-backup:
+    image: 'postgres:14.5-alpine'
+    container_name: fast-foodie-backup
+    restart: 'no'
+    environment:
+      - DB_HOST=fast-foodie-db
+      - DB_PORT=5432
+      - DB_NAME=${TYPEORM_DATABASE}
+      - DB_USER=${TYPEORM_USERNAME}
+      - DB_PASSWORD=${TYPEORM_PASSWORD}
+    volumes:
+      - ./scripts:/scripts
+      - backups:/backups
+    networks:
+      - fast-foodie-network
+    command: >
+      sh -c "
+        apk add --no-cache bash &&
+        chmod +x /scripts/backup-db.sh &&
+        /scripts/backup-db.sh
+      "
+    depends_on:
+      - fast-foodie-db
+
 volumes:
   db:
+  backups:
