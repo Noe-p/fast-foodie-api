@@ -20,7 +20,8 @@
     "typeorm": "typeorm-ts-node-commonjs",
     "migrate": "npm run migrate:generate && npm run migrate:run",
     "migrate:generate": "npx ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:generate ./src/migrations/migrations -d ./ormconfig.ts",
-    "migrate:run": "npx ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:run -d ./ormconfig.ts",    "migrate:show": "npx typeorm-ts-node-esm migration:show -d ./ormconfig.ts",
+    "migrate:run": "npx ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:run -d ./ormconfig.ts",
+    "migrate:show": "npx typeorm-ts-node-esm migration:show -d ./ormconfig.ts",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json"

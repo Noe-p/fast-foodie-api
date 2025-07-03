@@ -24,6 +24,7 @@ import * as path from 'path';
 import { v4 as uuid } from 'uuid';
 import { MediaService } from '../media/media.service';
 import { ImageOptimizerService } from './image-optimizer.service';
+import { OptimizationConfigService } from './optimization-config.service';
 
 export function replaceAll(str: string, find: string, replace: string) {
   return str.replace(new RegExp(find, 'g'), replace);
@@ -38,6 +39,8 @@ export class FileUploadController {
     private mediaService: MediaService,
     @Inject(ImageOptimizerService)
     private imageOptimizer: ImageOptimizerService,
+    @Inject(OptimizationConfigService)
+    private optimizationConfig: OptimizationConfigService,
   ) {}
 
   @Post('/')
@@ -93,15 +96,59 @@ export class FileUploadController {
     }
 
     try {
+      // Validation rapide avec cache
+      const isValid = await this.imageOptimizer.validateImage(
+        file.buffer,
+        file.originalname,
+      );
+
+      if (!isValid) {
+        throw new BadRequestException({
+          message: errorMessage.api('media').INVALID_FORMAT,
+        });
+      }
+
       this.logger.log(`Optimisation de l'image: ${file.originalname}`);
+
+      // Obtenir les métadonnées pour une optimisation intelligente
+      const metadata = await this.imageOptimizer.getImageMetadata(
+        file.buffer,
+        file.originalname,
+      );
+
+      // Déterminer si l'optimisation est nécessaire
+      const shouldOptimize = this.optimizationConfig.shouldOptimize(
+        file.buffer.length,
+        metadata.width,
+        metadata.height,
+      );
+
+      let optimizationOptions;
+      if (shouldOptimize) {
+        // Utiliser le profil optimal basé sur la taille
+        const optimalProfile = this.optimizationConfig.getOptimalProfile(
+          file.buffer.length,
+        );
+        optimizationOptions =
+          this.optimizationConfig.profileToOptions(optimalProfile);
+
+        this.logger.log(
+          `Profil d'optimisation sélectionné: ${optimalProfile.name}`,
+        );
+      } else {
+        // Pas d'optimisation nécessaire
+        optimizationOptions = {
+          width: metadata.width || 800,
+          height: metadata.height || 800,
+          quality: 95,
+          format: 'webp' as const,
+        };
+        this.logger.log('Aucune optimisation nécessaire');
+      }
+
       const compressedImageBuffer = await this.imageOptimizer.optimizeImage(
         file.buffer,
-        {
-          width: 800,
-          height: 800,
-          quality: 80,
-          format: 'webp',
-        },
+        optimizationOptions,
         file.originalname,
       );
 

@@ -6,7 +6,8 @@ help:
 
 #-- PROJECT
 start:  ## Start project
-	yarn watch
+	@docker-compose up -d
+	@yarn watch
 
 #-- DATABASE
 db.create: ## Create database

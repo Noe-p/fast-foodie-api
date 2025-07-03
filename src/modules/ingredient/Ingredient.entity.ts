@@ -5,7 +5,7 @@ import { Food } from '../food/Food.entity';
 
 @Entity()
 export class Ingredient extends BaseEntity {
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'float' })
   quantity: number;
 
   @Column({ nullable: true })

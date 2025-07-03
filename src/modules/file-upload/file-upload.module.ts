@@ -11,6 +11,7 @@ import { UserModule } from '../user/user.module';
 import { FileUploadController } from './file-upload.controller';
 import { FileUploadService } from './file-upload.service';
 import { ImageOptimizerService } from './image-optimizer.service';
+import { OptimizationConfigService } from './optimization-config.service';
 
 @Module({
   imports: [
@@ -18,9 +19,17 @@ import { ImageOptimizerService } from './image-optimizer.service';
     forwardRef(() => MediaModule),
     forwardRef(() => UserModule),
   ],
-  providers: [FileUploadService, ImageOptimizerService],
+  providers: [
+    FileUploadService,
+    ImageOptimizerService,
+    OptimizationConfigService,
+  ],
   controllers: [FileUploadController],
-  exports: [FileUploadService, ImageOptimizerService],
+  exports: [
+    FileUploadService,
+    ImageOptimizerService,
+    OptimizationConfigService,
+  ],
 })
 export class FileUploadModule {
   public configure(consumer: MiddlewareConsumer) {
