@@ -5,32 +5,25 @@
 
 # Variables
 COMPOSE_FILE = docker-compose.yml
-COMPOSE_PROD_FILE = docker-compose.api.yml
 PROJECT_DIR = ~/fast-foodie
 
 # Aide
 help:
 	@echo "🚀 Fast Foodie API - Commandes disponibles:"
 	@echo ""
-	@echo "📦 Développement Local (docker-compose.yml):"
+	@echo "📦 Développement Local:"
 	@echo "  make build     - Construire les images Docker"
 	@echo "  make up        - Démarrer les services"
 	@echo "  make down      - Arrêter les services"
 	@echo "  make logs      - Afficher les logs"
 	@echo ""
-	@echo "📦 Production (docker-compose.api.yml):"
-	@echo "  make prod-up   - Démarrer les services en production"
-	@echo "  make prod-down - Arrêter les services en production"
+	@echo "🚀 Déploiement:"
 	@echo "  make deploy    - Build, push et déployer avec Ansible"
 	@echo ""
-	@echo "💾 Sauvegardes Local:"
+	@echo "💾 Sauvegardes:"
 	@echo "  make backup    - Créer une sauvegarde manuelle"
 	@echo "  make restore   - Restaurer une sauvegarde (usage: make restore FILE=backup.sql)"
 	@echo "  make list-backups - Lister les sauvegardes"
-	@echo ""
-	@echo "💾 Sauvegardes Production:"
-	@echo "  make prod-backup - Créer une sauvegarde en production"
-	@echo "  make prod-list-backups - Lister les sauvegardes en production"
 	@echo ""
 	@echo "⚙️  Configuration:"
 	@echo "  make setup-backup - Configurer les sauvegardes automatiques"
@@ -67,33 +60,6 @@ down:
 
 logs:
 	docker-compose -f $(COMPOSE_FILE) logs -f
-
-# Production
-prod-up:
-	docker-compose -f $(COMPOSE_PROD_FILE) up -d
-
-prod-down:
-	docker-compose -f $(COMPOSE_PROD_FILE) down
-
-prod-backup:
-	@echo "💾 Création d'une sauvegarde en production..."
-	@if [ -d "$(PROJECT_DIR)" ]; then \
-		cd $(PROJECT_DIR) && \
-		BACKUP_DIR="$(PROJECT_DIR)/backups" ./scripts/backup-db.sh; \
-	else \
-		echo "❌ Répertoire $(PROJECT_DIR) non trouvé"; \
-		exit 1; \
-	fi
-
-prod-list-backups:
-	@echo "📋 Liste des sauvegardes en production:"
-	@if [ -d "$(PROJECT_DIR)" ]; then \
-		cd $(PROJECT_DIR) && \
-		BACKUP_DIR="$(PROJECT_DIR)/backups" ./scripts/list-backups.sh; \
-	else \
-		echo "❌ Répertoire $(PROJECT_DIR) non trouvé"; \
-		exit 1; \
-	fi
 
 # Sauvegardes
 backup:

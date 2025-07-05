@@ -126,10 +126,21 @@ case "${FREQUENCY}" in
 esac
 
 # Ajouter la tâche cron
+# Supprimer d'abord les tâches existantes pour éviter les doublons
+echo "🧹 Suppression des tâches cron existantes pour Fast Foodie..."
+crontab -l 2>/dev/null | grep -v "fast-foodie-backup-cron.sh" | crontab -
+
+# Ajouter la nouvelle tâche
+echo "➕ Ajout de la nouvelle tâche cron..."
 (crontab -l 2>/dev/null; echo "${CRON_SCHEDULE} ${CRON_SCRIPT}") | crontab -
 
 echo "✅ Tâche cron configurée avec succès!"
-echo "📋 Tâches cron actuelles:"
+
+# Afficher les tâches existantes pour Fast Foodie
+echo "📋 Tâches cron Fast Foodie existantes:"
+crontab -l 2>/dev/null | grep "fast-foodie" || echo "   Aucune tâche Fast Foodie trouvée"
+
+echo "📋 Toutes les tâches cron actuelles:"
 crontab -l
 
 echo ""

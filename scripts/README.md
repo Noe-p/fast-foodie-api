@@ -15,36 +15,36 @@ Ce dossier contient tous les scripts nécessaires pour gérer les sauvegardes au
 
 ```bash
 # Sauvegarde avec nom par défaut (timestamp automatique)
-docker-compose -f docker-compose.api.yml run --rm fast-foodie-backup
+BACKUP_DIR="/home/noep/fast-foodie/backups" ./scripts/backup-db.sh
 
 # Sauvegarde avec nom personnalisé
-docker-compose -f docker-compose.api.yml run --rm fast-foodie-backup /scripts/backup-db.sh "ma_sauvegarde"
+BACKUP_DIR="/home/noep/fast-foodie/backups" ./scripts/backup-db.sh "ma_sauvegarde"
 ```
 
 ### Restauration
 
 ```bash
 # Restaurer une sauvegarde
-docker-compose -f docker-compose.api.yml run --rm fast-foodie-backup /scripts/restore-db.sh "fast_foodie_backup_20241201_020000.sql"
+BACKUP_DIR="/home/noep/fast-foodie/backups" ./scripts/restore-db.sh "fast_foodie_backup_20241201_020000.sql"
 ```
 
 ### Gestion des sauvegardes
 
 ```bash
 # Lister toutes les sauvegardes
-docker-compose -f docker-compose.api.yml run --rm fast-foodie-backup /scripts/list-backups.sh
+BACKUP_DIR="/home/noep/fast-foodie/backups" ./scripts/list-backups.sh
 
 # Afficher les informations d'une sauvegarde
-docker-compose -f docker-compose.api.yml run --rm fast-foodie-backup /scripts/list-backups.sh info "fast_foodie_backup_20241201_020000.sql"
+BACKUP_DIR="/home/noep/fast-foodie/backups" ./scripts/list-backups.sh info "fast_foodie_backup_20241201_020000.sql"
 
 # Supprimer une sauvegarde
-docker-compose -f docker-compose.api.yml run --rm fast-foodie-backup /scripts/list-backups.sh delete "fast_foodie_backup_20241201_020000.sql"
+BACKUP_DIR="/home/noep/fast-foodie/backups" ./scripts/list-backups.sh delete "fast_foodie_backup_20241201_020000.sql"
 
 # Nettoyer les anciennes sauvegardes
-docker-compose -f docker-compose.api.yml run --rm fast-foodie-backup /scripts/list-backups.sh cleanup
+BACKUP_DIR="/home/noep/fast-foodie/backups" ./scripts/list-backups.sh cleanup
 
 # Afficher les statistiques
-docker-compose -f docker-compose.api.yml run --rm fast-foodie-backup /scripts/list-backups.sh stats
+BACKUP_DIR="/home/noep/fast-foodie/backups" ./scripts/list-backups.sh stats
 ```
 
 ## ⏰ Sauvegardes automatiques
@@ -55,13 +55,13 @@ Le système de sauvegardes automatiques utilise cron pour exécuter les sauvegar
 
 ```bash
 # Configuration des sauvegardes quotidiennes à 2h00
-./setup-backup-cron.sh daily 02:00
+./scripts/setup-backup-cron.sh daily 02:00
 
 # Configuration des sauvegardes hebdomadaires le dimanche à 2h00
-./setup-backup-cron.sh weekly 02:00
+./scripts/setup-backup-cron.sh weekly 02:00
 
 # Configuration des sauvegardes mensuelles le 1er du mois à 2h00
-./setup-backup-cron.sh monthly 02:00
+./scripts/setup-backup-cron.sh monthly 02:00
 ```
 
 ### Fréquences disponibles
@@ -82,10 +82,10 @@ Les logs des sauvegardes automatiques sont stockés dans :
 
 ### Localisation des sauvegardes
 
-Les sauvegardes sont stockées dans le volume Docker `backups` :
+Les sauvegardes sont stockées dans le répertoire local :
 
-- **Dans le container** : `/backups/`
-- **Sur l'hôte** : Volume Docker géré par Docker
+- **Répertoire** : `/home/noep/fast-foodie/backups/`
+- **Format** : Fichiers `.sql` avec timestamp
 
 ### Rétention
 
@@ -97,14 +97,14 @@ Les sauvegardes sont stockées dans le volume Docker `backups` :
 
 ### Variables d'environnement
 
-Les scripts utilisent les variables d'environnement suivantes :
+Les scripts utilisent les variables d'environnement du fichier `.env` :
 
 ```bash
-DB_HOST=fast-foodie-db          # Hôte de la base de données
-DB_PORT=5432                    # Port PostgreSQL
-DB_NAME=fast_foodie             # Nom de la base de données
-DB_USER=postgres                # Utilisateur PostgreSQL
-DB_PASSWORD=your_password       # Mot de passe PostgreSQL
+TYPEORM_HOST=localhost          # Hôte de la base de données
+TYPEORM_PORT=5432              # Port PostgreSQL
+TYPEORM_DATABASE=fast_foodie   # Nom de la base de données
+TYPEORM_USERNAME=postgres      # Utilisateur PostgreSQL
+TYPEORM_PASSWORD=your_password # Mot de passe PostgreSQL
 ```
 
 ### Personnalisation
@@ -134,20 +134,20 @@ Lors d'une restauration, le script `restore-db.sh` crée automatiquement une sau
 1. **Erreur de connexion à la base de données**
 
    - Vérifier que le container `fast-foodie-db` est démarré
-   - Vérifier les variables d'environnement
+   - Vérifier les variables d'environnement dans le fichier `.env`
 
 2. **Espace disque insuffisant**
 
-   - Nettoyer les anciennes sauvegardes : `./list-backups.sh cleanup`
-   - Vérifier l'espace disponible sur le volume Docker
+   - Nettoyer les anciennes sauvegardes : `BACKUP_DIR="/home/noep/fast-foodie/backups" ./scripts/list-backups.sh cleanup`
+   - Vérifier l'espace disponible : `df -h`
 
 3. **Permissions insuffisantes**
    - Vérifier les permissions du répertoire de sauvegarde
-   - S'assurer que l'utilisateur PostgreSQL a les droits nécessaires
+   - S'assurer que l'utilisateur a les droits nécessaires
 
 ### Logs de débogage
 
-Pour activer les logs détaillés, ajouter `--verbose` aux commandes pg_dump :
+Pour activer les logs détaillés, ajouter `--verbose` aux commandes pg_dump dans `backup-db.sh` :
 
 ```bash
 # Dans backup-db.sh, ligne avec pg_dump
@@ -171,6 +171,46 @@ PGPASSWORD="${DB_PASSWORD}" pg_dump \
 En cas de problème avec le système de sauvegarde :
 
 1. Vérifier les logs : `tail -f /home/noep/fast-foodie/backup.log`
-2. Tester manuellement : `docker-compose -f docker-compose.api.yml run --rm fast-foodie-backup`
+2. Tester manuellement : `BACKUP_DIR="/home/noep/fast-foodie/backups" ./scripts/backup-db.sh`
 3. Vérifier l'espace disque : `df -h`
 4. Vérifier les containers : `docker-compose -f docker-compose.api.yml ps`
+5. Vérifier les tâches cron : `crontab -l`
+
+## 🖥️ Commandes de production
+
+### Connexion au serveur
+
+```bash
+ssh noep@votre-serveur.com
+cd /home/noep/fast-foodie
+```
+
+### Sauvegarde d'urgence
+
+```bash
+# Créer une sauvegarde immédiate
+BACKUP_DIR="/home/noep/fast-foodie/backups" ./scripts/backup-db.sh
+```
+
+### Restauration d'urgence
+
+```bash
+# Arrêter l'application
+docker-compose -f docker-compose.api.yml down
+
+# Restaurer la sauvegarde
+BACKUP_DIR="/home/noep/fast-foodie/backups" ./scripts/restore-db.sh "backup_2024_01_15_02_00.sql"
+
+# Redémarrer l'application
+docker-compose -f docker-compose.api.yml up -d
+```
+
+### Vérification
+
+```bash
+# Voir les logs de l'application
+docker-compose -f docker-compose.api.yml logs -f
+
+# Vérifier l'état des conteneurs
+docker-compose -f docker-compose.api.yml ps
+```
