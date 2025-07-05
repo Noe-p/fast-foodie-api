@@ -17,11 +17,19 @@ mkdir -p "$BACKUP_DIR"
 # Fonction de sauvegarde
 backup_database() {
     echo "📦 Sauvegarde de la base de données..."
-    if [ -f "$PROJECT_DIR/scripts/backup-db.sh" ]; then
-        chmod +x "$PROJECT_DIR/scripts/backup-db.sh"
-        # Exécuter le script de sauvegarde avec le bon répertoire
-        cd "$PROJECT_DIR"
-        BACKUP_DIR="$BACKUP_DIR" "$PROJECT_DIR/scripts/backup-db.sh"
+    
+    # Vérifier si le conteneur de base de données existe et fonctionne
+    if docker ps | grep -q "fast-foodie-db"; then
+        echo "✅ Conteneur de base de données trouvé, sauvegarde en cours..."
+        if [ -f "$PROJECT_DIR/scripts/backup-db.sh" ]; then
+            chmod +x "$PROJECT_DIR/scripts/backup-db.sh"
+            # Exécuter le script de sauvegarde avec le bon répertoire
+            cd "$PROJECT_DIR"
+            BACKUP_DIR="$BACKUP_DIR" "$PROJECT_DIR/scripts/backup-db.sh"
+        fi
+    else
+        echo "⚠️  Conteneur de base de données non trouvé, pas de sauvegarde"
+        echo "ℹ️  C'est normal pour le premier déploiement"
     fi
 }
 
@@ -81,8 +89,8 @@ health_check() {
 
 # Exécution principale
 main() {
-    backup_database
     deploy
+    backup_database
     cleanup
     health_check
     
