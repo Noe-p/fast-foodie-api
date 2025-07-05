@@ -58,11 +58,30 @@ deploy() {
     fi
     
     # Pull de la nouvelle image
-    docker pull ghcr.io/noephilippe/fast-foodie-api:latest
+    echo "⬇️  Téléchargement de la nouvelle image..."
+    if docker pull ghcr.io/noephilippe/fast-foodie-api:main; then
+        echo "✅ Image téléchargée avec succès"
+    else
+        echo "⚠️  Image non trouvée, utilisation de l'image locale si disponible"
+        # Vérifier si une image locale existe
+        if docker images | grep -q "fast-foodie-api"; then
+            echo "✅ Image locale trouvée"
+        else
+            echo "❌ Aucune image disponible, arrêt du déploiement"
+            exit 1
+        fi
+    fi
     
     # Démarrer les conteneurs
     echo "▶️  Démarrage des conteneurs..."
-    docker compose -f "$COMPOSE_FILE" up -d
+    if docker compose -f "$COMPOSE_FILE" up -d; then
+        echo "✅ Conteneurs démarrés avec succès"
+    else
+        echo "❌ Erreur lors du démarrage des conteneurs"
+        echo "📋 Logs des conteneurs:"
+        docker compose -f "$COMPOSE_FILE" logs
+        exit 1
+    fi
     
     # Vérifier le statut
     echo "📊 Statut des conteneurs:"
