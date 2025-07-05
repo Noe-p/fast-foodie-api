@@ -56,8 +56,9 @@ deploy() {
     if [ -n "$CR_PAT" ]; then
         echo "$CR_PAT" | docker login ghcr.io -u "$GITHUB_USERNAME" --password-stdin
     fi
-    # L'image sera spécifiée dans le docker-compose avec les variables
-    docker compose -f "$COMPOSE_FILE" pull
+    
+    # Pull de la nouvelle image
+    docker pull ghcr.io/noephilippe/fast-foodie-api:latest
     
     # Démarrer les conteneurs
     echo "▶️  Démarrage des conteneurs..."
