@@ -6,7 +6,7 @@ networks:
 
 services:
   fast-foodie-api:
-    image: 'ghcr.io/noephilippe/fast-foodie-api:main'
+    image: '${GHCR_REGISTRY}/${OWNER_LC}/fast-foodie-api:main'
     container_name: fast-foodie-api
     restart: always
     env_file: .env

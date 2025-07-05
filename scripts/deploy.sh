@@ -81,14 +81,14 @@ deploy() {
     
     # Pull de la nouvelle image
     echo "⬇️  Téléchargement de la nouvelle image..."
-    if docker pull ghcr.io/noephilippe/fast-foodie-api:main; then
+    if docker pull ghcr.io/noe-p/fast-foodie-api:main; then
         echo "✅ Image téléchargée avec succès"
     else
         echo "⚠️  Image non trouvée, utilisation d'une image temporaire"
         echo "ℹ️  L'image sera construite lors du prochain déploiement"
         # Créer une image temporaire pour permettre le démarrage
         docker pull node:18.17.0-alpine
-        docker tag node:18.17.0-alpine ghcr.io/noephilippe/fast-foodie-api:main
+        docker tag node:18.17.0-alpine ghcr.io/noe-p/fast-foodie-api:main
     fi
     
     # Démarrer les conteneurs
@@ -110,6 +110,14 @@ deploy() {
 # Fonction de vérification de santé
 health_check() {
     echo "🏥 Vérification de la santé de l'application..."
+    
+    # Afficher les logs du conteneur API pour diagnostiquer
+    echo "📋 Logs du conteneur API:"
+    docker logs fast-foodie-api --tail 20 || echo "Impossible de récupérer les logs"
+    
+    echo "📋 Logs du conteneur base de données:"
+    docker logs fast-foodie-db --tail 10 || echo "Impossible de récupérer les logs"
+    
     sleep 10
     
     # Attendre que l'API soit prête
@@ -123,6 +131,8 @@ health_check() {
     done
     
     echo "❌ L'application n'a pas démarré correctement"
+    echo "📋 Logs finaux du conteneur API:"
+    docker logs fast-foodie-api --tail 50 || echo "Impossible de récupérer les logs"
     return 1
 }
 
