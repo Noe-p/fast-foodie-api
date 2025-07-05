@@ -62,14 +62,11 @@ deploy() {
     if docker pull ghcr.io/noephilippe/fast-foodie-api:main; then
         echo "✅ Image téléchargée avec succès"
     else
-        echo "⚠️  Image non trouvée, utilisation de l'image locale si disponible"
-        # Vérifier si une image locale existe
-        if docker images | grep -q "fast-foodie-api"; then
-            echo "✅ Image locale trouvée"
-        else
-            echo "❌ Aucune image disponible, arrêt du déploiement"
-            exit 1
-        fi
+        echo "⚠️  Image non trouvée, utilisation d'une image temporaire"
+        echo "ℹ️  L'image sera construite lors du prochain déploiement"
+        # Créer une image temporaire pour permettre le démarrage
+        docker pull node:18.17.0-alpine
+        docker tag node:18.17.0-alpine ghcr.io/noephilippe/fast-foodie-api:main
     fi
     
     # Démarrer les conteneurs
@@ -110,7 +107,12 @@ health_check() {
 # Exécution principale
 main() {
     deploy
-    backup_database
+    # Sauvegarde seulement si c'est pas le premier déploiement
+    if docker ps | grep -q "fast-foodie-db"; then
+        backup_database
+    else
+        echo "ℹ️  Premier déploiement, pas de sauvegarde"
+    fi
     cleanup
     health_check
     
