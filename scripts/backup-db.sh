@@ -6,7 +6,7 @@
 set -e
 
 # Configuration
-BACKUP_DIR="/backups"
+BACKUP_DIR="${BACKUP_DIR:-./backups}"
 MAX_BACKUPS=7  # Garder 7 jours de sauvegardes
 DATE=$(date +%Y%m%d_%H%M%S)
 BACKUP_NAME=${1:-"fast_foodie_backup_${DATE}"}
@@ -15,7 +15,7 @@ BACKUP_FILE="${BACKUP_DIR}/${BACKUP_NAME}.sql"
 # Variables d'environnement (seront définies dans le container)
 DB_HOST=${DB_HOST:-"fast-foodie-db"}
 DB_PORT=${DB_PORT:-"5432"}
-DB_NAME=${DB_NAME:-"fast_foodie"}
+DB_NAME=${DB_NAME:-"fast_foodie_db"}
 DB_USER=${DB_USER:-"postgres"}
 DB_PASSWORD=${DB_PASSWORD:-""}
 

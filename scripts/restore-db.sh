@@ -6,10 +6,10 @@
 set -e
 
 # Configuration
-BACKUP_DIR="/backups"
+BACKUP_DIR="${BACKUP_DIR:-./backups}"
 DB_HOST=${DB_HOST:-"fast-foodie-db"}
 DB_PORT=${DB_PORT:-"5432"}
-DB_NAME=${DB_NAME:-"fast_foodie"}
+DB_NAME=${DB_NAME:-"fast_foodie_db"}
 DB_USER=${DB_USER:-"postgres"}
 DB_PASSWORD=${DB_PASSWORD:-""}
 

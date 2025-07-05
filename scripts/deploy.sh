@@ -19,7 +19,9 @@ backup_database() {
     echo "📦 Sauvegarde de la base de données..."
     if [ -f "$PROJECT_DIR/scripts/backup-db.sh" ]; then
         chmod +x "$PROJECT_DIR/scripts/backup-db.sh"
-        "$PROJECT_DIR/scripts/backup-db.sh"
+        # Exécuter le script de sauvegarde avec le bon répertoire
+        cd "$PROJECT_DIR"
+        BACKUP_DIR="$BACKUP_DIR" "$PROJECT_DIR/scripts/backup-db.sh"
     fi
 }
 

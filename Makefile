@@ -6,7 +6,7 @@
 # Variables
 COMPOSE_FILE = docker-compose.yml
 COMPOSE_PROD_FILE = docker-compose.api.yml
-BACKUP_SERVICE = fast-foodie-backup
+PROJECT_DIR = ~/fast-foodie
 
 # Aide
 help:
@@ -77,16 +77,34 @@ prod-down:
 
 prod-backup:
 	@echo "💾 Création d'une sauvegarde en production..."
-	docker-compose -f $(COMPOSE_PROD_FILE) run --rm $(BACKUP_SERVICE)
+	@if [ -d "$(PROJECT_DIR)" ]; then \
+		cd $(PROJECT_DIR) && \
+		BACKUP_DIR="$(PROJECT_DIR)/backups" ./scripts/backup-db.sh; \
+	else \
+		echo "❌ Répertoire $(PROJECT_DIR) non trouvé"; \
+		exit 1; \
+	fi
 
 prod-list-backups:
 	@echo "📋 Liste des sauvegardes en production:"
-	docker-compose -f $(COMPOSE_PROD_FILE) run --rm $(BACKUP_SERVICE) /scripts/list-backups.sh
+	@if [ -d "$(PROJECT_DIR)" ]; then \
+		cd $(PROJECT_DIR) && \
+		BACKUP_DIR="$(PROJECT_DIR)/backups" ./scripts/list-backups.sh; \
+	else \
+		echo "❌ Répertoire $(PROJECT_DIR) non trouvé"; \
+		exit 1; \
+	fi
 
 # Sauvegardes
 backup:
 	@echo "💾 Création d'une sauvegarde manuelle..."
-	docker-compose -f $(COMPOSE_FILE) run --rm $(BACKUP_SERVICE)
+	@if [ -d "$(PROJECT_DIR)" ]; then \
+		cd $(PROJECT_DIR) && \
+		BACKUP_DIR="$(PROJECT_DIR)/backups" ./scripts/backup-db.sh; \
+	else \
+		echo "❌ Répertoire $(PROJECT_DIR) non trouvé"; \
+		exit 1; \
+	fi
 
 restore:
 	@if [ -z "$(FILE)" ]; then \
@@ -95,11 +113,23 @@ restore:
 		exit 1; \
 	fi
 	@echo "🔄 Restauration de la sauvegarde: $(FILE)"
-	docker-compose -f $(COMPOSE_FILE) run --rm $(BACKUP_SERVICE) /scripts/restore-db.sh "$(FILE)"
+	@if [ -d "$(PROJECT_DIR)" ]; then \
+		cd $(PROJECT_DIR) && \
+		BACKUP_DIR="$(PROJECT_DIR)/backups" ./scripts/restore-db.sh "$(FILE)"; \
+	else \
+		echo "❌ Répertoire $(PROJECT_DIR) non trouvé"; \
+		exit 1; \
+	fi
 
 list-backups:
 	@echo "📋 Liste des sauvegardes disponibles:"
-	docker-compose -f $(COMPOSE_FILE) run --rm $(BACKUP_SERVICE) /scripts/list-backups.sh
+	@if [ -d "$(PROJECT_DIR)" ]; then \
+		cd $(PROJECT_DIR) && \
+		BACKUP_DIR="$(PROJECT_DIR)/backups" ./scripts/list-backups.sh; \
+	else \
+		echo "❌ Répertoire $(PROJECT_DIR) non trouvé"; \
+		exit 1; \
+	fi
 
 setup-backup:
 	@echo "⏰ Configuration des sauvegardes automatiques..."
@@ -158,7 +188,13 @@ backup-info:
 		echo "Usage: make backup-info FILE=backup.sql"; \
 		exit 1; \
 	fi
-	docker-compose -f $(COMPOSE_FILE) run --rm $(BACKUP_SERVICE) /scripts/list-backups.sh info "$(FILE)"
+	@if [ -d "$(PROJECT_DIR)" ]; then \
+		cd $(PROJECT_DIR) && \
+		BACKUP_DIR="$(PROJECT_DIR)/backups" ./scripts/list-backups.sh info "$(FILE)"; \
+	else \
+		echo "❌ Répertoire $(PROJECT_DIR) non trouvé"; \
+		exit 1; \
+	fi
 
 backup-delete:
 	@if [ -z "$(FILE)" ]; then \
@@ -166,12 +202,30 @@ backup-delete:
 		echo "Usage: make backup-delete FILE=backup.sql"; \
 		exit 1; \
 	fi
-	docker-compose -f $(COMPOSE_FILE) run --rm $(BACKUP_SERVICE) /scripts/list-backups.sh delete "$(FILE)"
+	@if [ -d "$(PROJECT_DIR)" ]; then \
+		cd $(PROJECT_DIR) && \
+		BACKUP_DIR="$(PROJECT_DIR)/backups" ./scripts/list-backups.sh delete "$(FILE)"; \
+	else \
+		echo "❌ Répertoire $(PROJECT_DIR) non trouvé"; \
+		exit 1; \
+	fi
 
 backup-cleanup:
 	@echo "🧹 Nettoyage des anciennes sauvegardes..."
-	docker-compose -f $(COMPOSE_FILE) run --rm $(BACKUP_SERVICE) /scripts/list-backups.sh cleanup
+	@if [ -d "$(PROJECT_DIR)" ]; then \
+		cd $(PROJECT_DIR) && \
+		BACKUP_DIR="$(PROJECT_DIR)/backups" ./scripts/list-backups.sh cleanup; \
+	else \
+		echo "❌ Répertoire $(PROJECT_DIR) non trouvé"; \
+		exit 1; \
+	fi
 
 backup-stats:
 	@echo "📊 Statistiques des sauvegardes:"
-	docker-compose -f $(COMPOSE_FILE) run --rm $(BACKUP_SERVICE) /scripts/list-backups.sh stats
+	@if [ -d "$(PROJECT_DIR)" ]; then \
+		cd $(PROJECT_DIR) && \
+		BACKUP_DIR="$(PROJECT_DIR)/backups" ./scripts/list-backups.sh stats; \
+	else \
+		echo "❌ Répertoire $(PROJECT_DIR) non trouvé"; \
+		exit 1; \
+	fi

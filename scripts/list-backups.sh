@@ -6,7 +6,7 @@
 set -e
 
 # Configuration
-BACKUP_DIR="/backups"
+BACKUP_DIR="${BACKUP_DIR:-./backups}"
 ACTION=${1:-"list"}
 
 # Fonction pour afficher l'aide
