@@ -92,24 +92,9 @@ deploy() {
         # Aller dans le répertoire du projet pour le build
         cd "$PROJECT_DIR"
         
-        # Créer un Dockerfile temporaire pour une image simple
-        cat > Dockerfile.simple << 'EOF'
-FROM node:18.17.0-alpine
-WORKDIR /app
-RUN apk add --no-cache dumb-init
-COPY package*.json ./
-RUN npm install --omit=dev
-RUN mkdir -p /app/public/files
-ENTRYPOINT ["dumb-init", "--"]
-CMD ["node", "-e", "console.log('API temporaire démarrée'); require('http').createServer((req, res) => { res.writeHead(200, {'Content-Type': 'text/plain'}); res.end('API temporaire - Déploiement en cours...'); }).listen(8000, () => console.log('Serveur temporaire sur le port 8000'));"]
-EOF
-        
-        # Construire l'image temporaire
-        docker build -f Dockerfile.simple -t ghcr.io/noe-p/fast-foodie-api:main .
-        echo "✅ Image temporaire construite"
-        
-        # Nettoyer le Dockerfile temporaire
-        rm -f Dockerfile.simple
+        # Construire l'image avec le vrai Dockerfile
+        docker build -t ghcr.io/noe-p/fast-foodie-api:main .
+        echo "✅ Image construite avec succès"
     fi
     
     # Démarrer les conteneurs
