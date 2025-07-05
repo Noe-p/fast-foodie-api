@@ -18,53 +18,53 @@ Scripts pour gérer les sauvegardes de la base de données et des images en prod
 
 ```bash
 # Base de données
-BACKUP_DIR="../backups" ./list-backups.sh
+BACKUP_DIR="../backups" ./scripts/list-backups.sh
 
 # Images
-./list-image-backups.sh list
+./scripts/list-image-backups.sh list
 ```
 
 ### 💾 Créer une sauvegarde
 
 ```bash
 # Base de données
-BACKUP_DIR="../backups" ./backup-db.sh
+BACKUP_DIR="../backups" ./scripts/backup-db.sh
 
 # Images
-./backup-images.sh
+./scripts/backup-images.sh
 ```
 
 ### 🔄 Restaurer une sauvegarde
 
 ```bash
 # Base de données
-BACKUP_DIR="../backups" ./restore-db.sh "backup_2024_01_15_02_00.sql"
+BACKUP_DIR="../backups" ./scripts/restore-db.sh "backup_2024_01_15_02_00.sql"
 
 # Images
-./restore-images.sh "images_backup_20240115_020000.tar.gz"
+./scripts/restore-images.sh "images_backup_20240115_020000.tar.gz"
 ```
 
 ### 🧹 Nettoyer les anciennes sauvegardes
 
 ```bash
 # Base de données (garde 7 sauvegardes)
-BACKUP_DIR="../backups" ./list-backups.sh cleanup
+BACKUP_DIR="../backups" ./scripts/list-backups.sh cleanup
 
 # Images (garde 3 sauvegardes)
-./list-image-backups.sh cleanup
+./scripts/list-image-backups.sh cleanup
 ```
 
 ### ⏰ Configurer les sauvegardes automatiques
 
 ```bash
 # Quotidienne à 2h00
-./setup-backup-cron.sh daily 02:00
+./scripts/setup-backup-cron.sh daily 02:00
 
 # Hebdomadaire le dimanche à 2h00
-./setup-backup-cron.sh weekly 02:00
+./scripts/setup-backup-cron.sh weekly 02:00
 
 # Mensuelle le 1er du mois à 2h00
-./setup-backup-cron.sh monthly 02:00
+./scripts/setup-backup-cron.sh monthly 02:00
 ```
 
 ## 📊 Vérifications
@@ -97,10 +97,10 @@ du -sh /home/noep/fast-foodie/backups/
 docker-compose -f docker-compose.api.yml down
 
 # 2. Restaurer la base de données
-BACKUP_DIR="../backups" ./restore-db.sh "backup_2024_01_15_02_00.sql"
+BACKUP_DIR="../backups" ./scripts/restore-db.sh "backup_2024_01_15_02_00.sql"
 
 # 3. Restaurer les images (optionnel)
-./restore-images.sh "images_backup_20240115_020000.tar.gz"
+./scripts/restore-images.sh "images_backup_20240115_020000.tar.gz"
 
 # 4. Redémarrer l'application
 docker-compose -f docker-compose.api.yml up -d
@@ -146,15 +146,15 @@ cat .env | grep TYPEORM
 
 ```bash
 # Nettoyer les anciennes sauvegardes
-BACKUP_DIR="../backups" ./list-backups.sh cleanup
-./list-image-backups.sh cleanup
+BACKUP_DIR="../backups" ./scripts/list-backups.sh cleanup
+./scripts/list-image-backups.sh cleanup
 ```
 
 ### ⏰ Cron ne fonctionne pas
 
 ```bash
 # Reconfigurer les sauvegardes automatiques
-./setup-backup-cron.sh daily 02:00
+./scripts/setup-backup-cron.sh daily 02:00
 
 # Vérifier les logs
 tail -f /home/noep/fast-foodie/backup.log

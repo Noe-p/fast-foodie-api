@@ -6,6 +6,7 @@
 set -e
 
 # Configuration
+IMAGES_DIR="/home/noep/fast-foodie/public/files"
 BACKUP_DIR="/home/noep/fast-foodie/backups/images"
 
 # Fonction de logging

@@ -6,7 +6,7 @@
 set -e
 
 # Configuration
-IMAGES_DIR="/home/noep/fast-foodie/public/uploads"
+IMAGES_DIR="/home/noep/fast-foodie/public/files"
 BACKUP_DIR="/home/noep/fast-foodie/backups/images"
 MAX_BACKUPS=3  # Garder seulement 3 sauvegardes d'images
 COMPRESSION_LEVEL=9  # Compression maximale
