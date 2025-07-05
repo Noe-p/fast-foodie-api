@@ -14,6 +14,17 @@ BACKUP_DIR="$PROJECT_DIR/backups"
 mkdir -p "$PROJECT_DIR"
 mkdir -p "$BACKUP_DIR"
 
+# Vérifier la présence du fichier .env
+if [ -f "$PROJECT_DIR/.env" ]; then
+    echo "✅ Fichier .env trouvé"
+    echo "📄 Contenu du fichier .env (variables sensibles masquées):"
+    grep -E "^(TYPEORM_|JWT_|API_|FILES_)" "$PROJECT_DIR/.env" | sed 's/=.*/=***/' || echo "Aucune variable TYPEORM_ trouvée"
+else
+    echo "⚠️  Fichier .env non trouvé dans $PROJECT_DIR"
+    echo "📋 Fichiers présents dans le répertoire:"
+    ls -la "$PROJECT_DIR" || echo "Répertoire vide ou inaccessible"
+fi
+
 # Fonction de sauvegarde
 backup_database() {
     echo "📦 Sauvegarde de la base de données..."
@@ -21,11 +32,22 @@ backup_database() {
     # Vérifier si le conteneur de base de données existe et fonctionne
     if docker ps | grep -q "fast-foodie-db"; then
         echo "✅ Conteneur de base de données trouvé, sauvegarde en cours..."
+        
+        # Déboguer les variables d'environnement
+        echo "🔍 Débogage des variables d'environnement:"
+        echo "  TYPEORM_HOST: ${TYPEORM_HOST:-non défini}"
+        echo "  TYPEORM_PORT: ${TYPEORM_PORT:-non défini}"
+        echo "  TYPEORM_USERNAME: ${TYPEORM_USERNAME:-non défini}"
+        echo "  TYPEORM_DATABASE: ${TYPEORM_DATABASE:-non défini}"
+        echo "  TYPEORM_PASSWORD: ${TYPEORM_PASSWORD:+défini}"
+        
         if [ -f "$PROJECT_DIR/scripts/backup-db.sh" ]; then
             chmod +x "$PROJECT_DIR/scripts/backup-db.sh"
             # Exécuter le script de sauvegarde avec le bon répertoire
             cd "$PROJECT_DIR"
             BACKUP_DIR="$BACKUP_DIR" "$PROJECT_DIR/scripts/backup-db.sh"
+        else
+            echo "❌ Script de sauvegarde non trouvé: $PROJECT_DIR/scripts/backup-db.sh"
         fi
     else
         echo "⚠️  Conteneur de base de données non trouvé, pas de sauvegarde"
