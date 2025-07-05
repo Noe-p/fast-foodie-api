@@ -6,7 +6,8 @@
 set -e
 
 # Configuration
-IMAGES_DIR="/home/noep/fast-foodie/public/files"
+CONTAINER_NAME="fast-foodie-api"
+IMAGES_DIR="/app/public/files"
 BACKUP_DIR="/home/noep/fast-foodie/backups/images"
 
 # Fonction de logging
@@ -95,13 +96,13 @@ log "🖼️  Début de la restauration des images..."
 SAFETY_BACKUP="images_safety_$(date '+%Y%m%d_%H%M%S').tar.gz"
 SAFETY_PATH="${BACKUP_DIR}/${SAFETY_BACKUP}"
 
-if [ -d "$IMAGES_DIR" ] && [ "$(ls -A "$IMAGES_DIR" 2>/dev/null)" ]; then
+if docker exec "${CONTAINER_NAME}" test -d "$IMAGES_DIR" && [ "$(docker exec "${CONTAINER_NAME}" ls -A "$IMAGES_DIR" 2>/dev/null)" ]; then
     log "🛡️  Création d'une sauvegarde de sécurité: ${SAFETY_BACKUP}"
     
     if [ "$VERBOSE" = true ]; then
-        tar -czf "$SAFETY_PATH" -C "$IMAGES_DIR" .
+        docker exec "${CONTAINER_NAME}" tar -czf - -C "$IMAGES_DIR" . > "$SAFETY_PATH"
     else
-        tar -czf "$SAFETY_PATH" -C "$IMAGES_DIR" . >/dev/null 2>&1
+        docker exec "${CONTAINER_NAME}" tar -czf - -C "$IMAGES_DIR" . > "$SAFETY_PATH" 2>/dev/null
     fi
     
     log "✅ Sauvegarde de sécurité créée: ${SAFETY_BACKUP}"
@@ -123,19 +124,16 @@ if [ "$FORCE" = false ]; then
     fi
 fi
 
-# Créer le répertoire de destination s'il n'existe pas
-mkdir -p "$IMAGES_DIR"
-
 # Sauvegarder les images actuelles si elles existent
-if [ -d "$IMAGES_DIR" ] && [ "$(ls -A "$IMAGES_DIR" 2>/dev/null)" ]; then
+if docker exec "${CONTAINER_NAME}" test -d "$IMAGES_DIR" && [ "$(docker exec "${CONTAINER_NAME}" ls -A "$IMAGES_DIR" 2>/dev/null)" ]; then
     log "📦 Sauvegarde des images actuelles..."
     CURRENT_BACKUP="images_current_$(date '+%Y%m%d_%H%M%S').tar.gz"
     CURRENT_PATH="${BACKUP_DIR}/${CURRENT_BACKUP}"
     
     if [ "$VERBOSE" = true ]; then
-        tar -czf "$CURRENT_PATH" -C "$IMAGES_DIR" .
+        docker exec "${CONTAINER_NAME}" tar -czf - -C "$IMAGES_DIR" . > "$CURRENT_PATH"
     else
-        tar -czf "$CURRENT_PATH" -C "$IMAGES_DIR" . >/dev/null 2>&1
+        docker exec "${CONTAINER_NAME}" tar -czf - -C "$IMAGES_DIR" . > "$CURRENT_PATH" 2>/dev/null
     fi
     
     log "✅ Images actuelles sauvegardées: ${CURRENT_BACKUP}"
@@ -143,20 +141,20 @@ fi
 
 # Vider le répertoire de destination
 log "🧹 Nettoyage du répertoire de destination..."
-rm -rf "$IMAGES_DIR"/*
-mkdir -p "$IMAGES_DIR"
+docker exec "${CONTAINER_NAME}" rm -rf "$IMAGES_DIR"/*
+docker exec "${CONTAINER_NAME}" mkdir -p "$IMAGES_DIR"
 
 # Restaurer les images
 log "🔄 Restauration des images depuis: ${BACKUP_FILE}"
 
 if [ "$VERBOSE" = true ]; then
-    tar -xzf "$BACKUP_PATH" -C "$IMAGES_DIR"
+    cat "$BACKUP_PATH" | docker exec -i "${CONTAINER_NAME}" tar -xzf - -C "$IMAGES_DIR"
 else
-    tar -xzf "$BACKUP_PATH" -C "$IMAGES_DIR" >/dev/null 2>&1
+    cat "$BACKUP_PATH" | docker exec -i "${CONTAINER_NAME}" tar -xzf - -C "$IMAGES_DIR" >/dev/null 2>&1
 fi
 
 # Vérifier que la restauration a réussi
-RESTORED_COUNT=$(find "$IMAGES_DIR" -type f \( -name "*.jpg" -o -name "*.jpeg" -o -name "*.png" -o -name "*.gif" -o -name "*.webp" \) | wc -l)
+RESTORED_COUNT=$(docker exec "${CONTAINER_NAME}" find "$IMAGES_DIR" -type f \( -name "*.jpg" -o -name "*.jpeg" -o -name "*.png" -o -name "*.gif" -o -name "*.webp" \) | wc -l)
 
 if [ "$RESTORED_COUNT" -eq 0 ]; then
     log "⚠️  Aucune image restaurée. Vérifiez le contenu de la sauvegarde."

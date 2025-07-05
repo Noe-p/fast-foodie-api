@@ -6,7 +6,8 @@
 set -e
 
 # Configuration
-IMAGES_DIR="/home/noep/fast-foodie/public/files"
+CONTAINER_NAME="fast-foodie-api"
+IMAGES_DIR="/app/public/files"
 BACKUP_DIR="/home/noep/fast-foodie/backups/images"
 MAX_BACKUPS=3  # Garder seulement 3 sauvegardes d'images
 COMPRESSION_LEVEL=9  # Compression maximale
@@ -60,9 +61,15 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Vérifier que le répertoire des images existe
-if [ ! -d "${IMAGES_DIR}" ]; then
-    log "❌ Le répertoire des images n'existe pas: ${IMAGES_DIR}"
+# Vérifier que le conteneur existe et est en cours d'exécution
+if ! docker ps | grep -q "${CONTAINER_NAME}"; then
+    log "❌ Le conteneur ${CONTAINER_NAME} n'est pas en cours d'exécution"
+    exit 1
+fi
+
+# Vérifier que le répertoire des images existe dans le conteneur
+if ! docker exec "${CONTAINER_NAME}" test -d "${IMAGES_DIR}"; then
+    log "❌ Le répertoire des images n'existe pas dans le conteneur: ${IMAGES_DIR}"
     exit 1
 fi
 
@@ -76,7 +83,7 @@ BACKUP_FILE="${BACKUP_DIR}/${BACKUP_NAME}"
 log "🖼️  Début de la sauvegarde des images..."
 
 # Vérifier s'il y a des images à sauvegarder
-IMAGE_COUNT=$(find "${IMAGES_DIR}" -type f \( -name "*.jpg" -o -name "*.jpeg" -o -name "*.png" -o -name "*.gif" -o -name "*.webp" \) | wc -l)
+IMAGE_COUNT=$(docker exec "${CONTAINER_NAME}" find "${IMAGES_DIR}" -type f \( -name "*.jpg" -o -name "*.jpeg" -o -name "*.png" -o -name "*.gif" -o -name "*.webp" \) | wc -l)
 
 if [ "$IMAGE_COUNT" -eq 0 ]; then
     log "ℹ️  Aucune image trouvée dans ${IMAGES_DIR}"
@@ -90,7 +97,7 @@ if [ "$FORCE" = false ]; then
     LAST_BACKUP=$(ls -t "${BACKUP_DIR}"/images_backup_*.tar.gz 2>/dev/null | head -1)
     if [ -n "$LAST_BACKUP" ]; then
         LAST_BACKUP_TIME=$(stat -c %Y "$LAST_BACKUP")
-        IMAGES_MOD_TIME=$(find "${IMAGES_DIR}" -type f -printf '%T@\n' | sort -n | tail -1)
+        IMAGES_MOD_TIME=$(docker exec "${CONTAINER_NAME}" find "${IMAGES_DIR}" -type f -printf '%T@\n' | sort -n | tail -1)
         
         if [ "$IMAGES_MOD_TIME" -le "$LAST_BACKUP_TIME" ]; then
             log "ℹ️  Aucun changement détecté depuis la dernière sauvegarde"
@@ -104,17 +111,17 @@ fi
 log "💾 Création de la sauvegarde: ${BACKUP_NAME}"
 
 if [ "$VERBOSE" = true ]; then
-    tar -czf "${BACKUP_FILE}" \
+    docker exec "${CONTAINER_NAME}" tar -czf - \
         --exclude="*.tmp" \
         --exclude="*.temp" \
         --exclude="*.cache" \
-        -C "${IMAGES_DIR}" .
+        -C "${IMAGES_DIR}" . > "${BACKUP_FILE}"
 else
-    tar -czf "${BACKUP_FILE}" \
+    docker exec "${CONTAINER_NAME}" tar -czf - \
         --exclude="*.tmp" \
         --exclude="*.temp" \
         --exclude="*.cache" \
-        -C "${IMAGES_DIR}" . >/dev/null 2>&1
+        -C "${IMAGES_DIR}" . > "${BACKUP_FILE}" 2>/dev/null
 fi
 
 # Vérifier que la sauvegarde a réussi
