@@ -46,10 +46,8 @@ cleanup_old_backups() {
 # Effectuer la sauvegarde
 echo "💾 Création du dump de la base de données..."
 
-# Utiliser pg_dump avec les variables d'environnement
-PGPASSWORD="${DB_PASSWORD}" pg_dump \
-    -h "${DB_HOST}" \
-    -p "${DB_PORT}" \
+# Utiliser pg_dump via Docker pour se connecter à la base de données
+docker exec fast-foodie-db pg_dump \
     -U "${DB_USER}" \
     -d "${DB_NAME}" \
     --verbose \
@@ -59,7 +57,7 @@ PGPASSWORD="${DB_PASSWORD}" pg_dump \
     --no-owner \
     --no-privileges \
     --format=plain \
-    --file="${BACKUP_FILE}"
+    > "${BACKUP_FILE}"
 
 if [ $? -eq 0 ]; then
     echo "✅ Sauvegarde créée avec succès: ${BACKUP_FILE}"

@@ -52,9 +52,8 @@ fi
 echo "💾 Création d'une sauvegarde de sécurité..."
 SAFETY_BACKUP="${BACKUP_DIR}/safety_backup_$(date +%Y%m%d_%H%M%S).sql"
 
-PGPASSWORD="${DB_PASSWORD}" pg_dump \
-    -h "${DB_HOST}" \
-    -p "${DB_PORT}" \
+# Utiliser pg_dump via Docker pour se connecter à la base de données
+docker exec fast-foodie-db pg_dump \
     -U "${DB_USER}" \
     -d "${DB_NAME}" \
     --verbose \
@@ -64,19 +63,18 @@ PGPASSWORD="${DB_PASSWORD}" pg_dump \
     --no-owner \
     --no-privileges \
     --format=plain \
-    --file="${SAFETY_BACKUP}"
+    > "${SAFETY_BACKUP}"
 
 echo "✅ Sauvegarde de sécurité créée: ${SAFETY_BACKUP}"
 
 # Effectuer la restauration
 echo "🔄 Restauration de la base de données..."
 
-PGPASSWORD="${DB_PASSWORD}" psql \
-    -h "${DB_HOST}" \
-    -p "${DB_PORT}" \
+# Utiliser psql via Docker pour se connecter à la base de données
+docker exec -i fast-foodie-db psql \
     -U "${DB_USER}" \
     -d "postgres" \
-    -f "${BACKUP_FILE}"
+    < "${BACKUP_FILE}"
 
 if [ $? -eq 0 ]; then
     echo "✅ Restauration terminée avec succès!"
