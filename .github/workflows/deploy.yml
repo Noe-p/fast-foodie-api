@@ -10,7 +10,7 @@ env:
   GHCR_REGISTRY: ghcr.io
   OWNER_LC: ${{ github.repository_owner }}
   SHORT_SHA: ${{ github.sha }}
-  IMAGE_NAME: ${{ github.repository }}-api
+  IMAGE_NAME: fast-foodie-api
 
 jobs:
   build:
