@@ -97,10 +97,13 @@ jobs:
             cd ~/fast-foodie
             export CR_PAT="${{ secrets.CR_PAT }}"
             export GITHUB_USERNAME="${{ github.actor }}"
-            chmod +x scripts/deploy.sh
+
+            # Rendre tous les scripts exécutables
+            chmod +x scripts/*.sh
+
+            # Déployer l'application
             ./scripts/deploy.sh
 
             # Reconfigurer les sauvegardes automatiques
             echo "⏰ Reconfiguration des sauvegardes automatiques..."
-            chmod +x scripts/setup-backup-cron.sh
             ./scripts/setup-backup-cron.sh daily 02:00

@@ -37,13 +37,13 @@ backup_database() {
         echo "  TYPEORM_DATABASE: ${TYPEORM_DATABASE:-non défini}"
         echo "  TYPEORM_PASSWORD: ${TYPEORM_PASSWORD:+défini}"
         
-        if [ -f "$PROJECT_DIR/scripts/backup-db.sh" ]; then
-            chmod +x "$PROJECT_DIR/scripts/backup-db.sh"
-            # Exécuter le script de sauvegarde avec le bon répertoire
+        if [ -f "$PROJECT_DIR/scripts/backup.sh" ]; then
+            chmod +x "$PROJECT_DIR/scripts/backup.sh"
+            # Exécuter le script de sauvegarde unifié avec le bon répertoire
             cd "$PROJECT_DIR"
-            BACKUP_DIR="$BACKUP_DIR" "$PROJECT_DIR/scripts/backup-db.sh"
+            BACKUP_DIR="$BACKUP_DIR" "$PROJECT_DIR/scripts/backup.sh"
         else
-            echo "❌ Script de sauvegarde non trouvé: $PROJECT_DIR/scripts/backup-db.sh"
+            echo "❌ Script de sauvegarde non trouvé: $PROJECT_DIR/scripts/backup.sh"
         fi
     else
         echo "⚠️  Conteneur de base de données non trouvé, pas de sauvegarde"

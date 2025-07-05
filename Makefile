@@ -66,7 +66,27 @@ backup:
 	@echo "💾 Création d'une sauvegarde manuelle..."
 	@if [ -d "$(PROJECT_DIR)" ]; then \
 		cd $(PROJECT_DIR) && \
-		BACKUP_DIR="$(PROJECT_DIR)/backups" ./scripts/backup-db.sh; \
+		BACKUP_DIR="$(PROJECT_DIR)/backups" ./scripts/backup.sh; \
+	else \
+		echo "❌ Répertoire $(PROJECT_DIR) non trouvé"; \
+		exit 1; \
+	fi
+
+backup-db:
+	@echo "💾 Création d'une sauvegarde DB manuelle..."
+	@if [ -d "$(PROJECT_DIR)" ]; then \
+		cd $(PROJECT_DIR) && \
+		BACKUP_DIR="$(PROJECT_DIR)/backups" ./scripts/backup.sh --db; \
+	else \
+		echo "❌ Répertoire $(PROJECT_DIR) non trouvé"; \
+		exit 1; \
+	fi
+
+backup-images:
+	@echo "💾 Création d'une sauvegarde images manuelle..."
+	@if [ -d "$(PROJECT_DIR)" ]; then \
+		cd $(PROJECT_DIR) && \
+		BACKUP_DIR="$(PROJECT_DIR)/backups" ./scripts/backup.sh --images; \
 	else \
 		echo "❌ Répertoire $(PROJECT_DIR) non trouvé"; \
 		exit 1; \
@@ -81,7 +101,7 @@ restore:
 	@echo "🔄 Restauration de la sauvegarde: $(FILE)"
 	@if [ -d "$(PROJECT_DIR)" ]; then \
 		cd $(PROJECT_DIR) && \
-		BACKUP_DIR="$(PROJECT_DIR)/backups" ./scripts/restore-db.sh "$(FILE)"; \
+		BACKUP_DIR="$(PROJECT_DIR)/backups" ./scripts/restore.sh "$(FILE)"; \
 	else \
 		echo "❌ Répertoire $(PROJECT_DIR) non trouvé"; \
 		exit 1; \
@@ -195,3 +215,4 @@ backup-stats:
 		echo "❌ Répertoire $(PROJECT_DIR) non trouvé"; \
 		exit 1; \
 	fi
+
