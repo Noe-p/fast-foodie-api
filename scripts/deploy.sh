@@ -10,6 +10,10 @@ PROJECT_DIR="$HOME/fast-foodie"
 COMPOSE_FILE="$PROJECT_DIR/docker-compose.api.yml"
 BACKUP_DIR="$PROJECT_DIR/backups"
 
+# Variables d'environnement pour Docker Compose
+export GHCR_REGISTRY="ghcr.io"
+export OWNER_LC="noe-p"
+
 # Créer le répertoire de projet s'il n'existe pas
 mkdir -p "$PROJECT_DIR"
 mkdir -p "$BACKUP_DIR"
