@@ -49,20 +49,20 @@ cd "${PROJECT_DIR}" || {
     exit 1
 }
 
-# Vérifier que docker-compose est disponible
-if ! command -v docker-compose &> /dev/null; then
-    log "❌ Erreur: docker-compose n'est pas installé"
+# Vérifier que docker compose est disponible
+if ! command -v docker &> /dev/null; then
+    log "❌ Erreur: docker n'est pas installé"
     exit 1
 fi
 
 # Exécuter la sauvegarde
 log "💾 Lancement du service de sauvegarde..."
 
-if docker-compose -f docker-compose.api.yml run --rm fast-foodie-backup; then
+if docker compose -f docker-compose.api.yml run --rm fast-foodie-backup; then
     log "✅ Sauvegarde terminée avec succès"
     
     # Nettoyer les containers arrêtés
-    docker-compose -f docker-compose.api.yml down --remove-orphans 2>/dev/null || true
+    docker compose -f docker-compose.api.yml down --remove-orphans 2>/dev/null || true
     
     # Nettoyer les images non utilisées
     docker image prune -f 2>/dev/null || true
