@@ -89,8 +89,11 @@ deploy() {
         echo "⚠️  Image non trouvée, construction locale..."
         echo "ℹ️  Construction de l'image Docker..."
         
+        # Aller dans le répertoire du projet pour le build
+        cd "$PROJECT_DIR"
+        
         # Créer un Dockerfile temporaire pour une image simple
-        cat > /tmp/Dockerfile.simple << 'EOF'
+        cat > Dockerfile.simple << 'EOF'
 FROM node:18.17.0-alpine
 WORKDIR /app
 RUN apk add --no-cache dumb-init
@@ -102,8 +105,11 @@ CMD ["node", "-e", "console.log('API temporaire démarrée'); require('http').cr
 EOF
         
         # Construire l'image temporaire
-        docker build -f /tmp/Dockerfile.simple -t ghcr.io/noe-p/fast-foodie-api:main .
+        docker build -f Dockerfile.simple -t ghcr.io/noe-p/fast-foodie-api:main .
         echo "✅ Image temporaire construite"
+        
+        # Nettoyer le Dockerfile temporaire
+        rm -f Dockerfile.simple
     fi
     
     # Démarrer les conteneurs
