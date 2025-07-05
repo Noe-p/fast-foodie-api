@@ -10,10 +10,6 @@ PROJECT_DIR="$HOME/fast-foodie"
 COMPOSE_FILE="$PROJECT_DIR/docker-compose.api.yml"
 BACKUP_DIR="$PROJECT_DIR/backups"
 
-# Variables d'environnement pour Docker Compose
-export GHCR_REGISTRY="ghcr.io"
-export OWNER_LC="noe-p"
-
 # Créer le répertoire de projet s'il n'existe pas
 mkdir -p "$PROJECT_DIR"
 mkdir -p "$BACKUP_DIR"
@@ -21,12 +17,8 @@ mkdir -p "$BACKUP_DIR"
 # Vérifier la présence du fichier .env
 if [ -f "$PROJECT_DIR/.env" ]; then
     echo "✅ Fichier .env trouvé"
-    echo "📄 Contenu du fichier .env (variables sensibles masquées):"
-    grep -E "^(TYPEORM_|JWT_|API_|FILES_)" "$PROJECT_DIR/.env" | sed 's/=.*/=***/' || echo "Aucune variable TYPEORM_ trouvée"
 else
     echo "⚠️  Fichier .env non trouvé dans $PROJECT_DIR"
-    echo "📋 Fichiers présents dans le répertoire:"
-    ls -la "$PROJECT_DIR" || echo "Répertoire vide ou inaccessible"
 fi
 
 # Fonction de sauvegarde
@@ -64,6 +56,12 @@ cleanup() {
     echo "🧹 Nettoyage des images Docker..."
     docker image prune -f
     docker system prune -f --volumes
+    
+    # Nettoyer les fichiers de développement s'ils existent
+    echo "🧹 Nettoyage des fichiers de développement..."
+    cd "$PROJECT_DIR"
+    rm -rf src/ package*.json tsconfig*.json nest-cli.json ormconfig.ts Dockerfile* 2>/dev/null || true
+    echo "✅ Fichiers de développement supprimés"
 }
 
 # Fonction de déploiement
@@ -76,30 +74,14 @@ deploy() {
         docker compose -f "$COMPOSE_FILE" down
     fi
     
-    # Pull de la nouvelle image
-    echo "⬇️  Téléchargement de la nouvelle image..."
     # Login to ghcr.io if CR_PAT is available
     if [ -n "$CR_PAT" ]; then
         echo "$CR_PAT" | docker login ghcr.io -u "$GITHUB_USERNAME" --password-stdin
     fi
     
-    if docker pull ghcr.io/noe-p/fast-foodie-api:main; then
-        echo "✅ Image téléchargée avec succès"
-    else
-        echo "⚠️  Image non trouvée, construction locale..."
-        echo "ℹ️  Construction de l'image Docker..."
-        
-        # Aller dans le répertoire du projet pour le build
-        cd "$PROJECT_DIR"
-        
-        # Construire l'image avec le vrai Dockerfile
-        docker build -t ghcr.io/noe-p/fast-foodie-api:main .
-        echo "✅ Image construite avec succès"
-    fi
-    
-    # Démarrer les conteneurs
-    echo "▶️  Démarrage des conteneurs..."
-    if docker compose -f "$COMPOSE_FILE" up -d; then
+    # Pull et démarrer les conteneurs
+    echo "⬇️  Téléchargement et démarrage des conteneurs..."
+    if docker compose -f "$COMPOSE_FILE" pull && docker compose -f "$COMPOSE_FILE" up -d; then
         echo "✅ Conteneurs démarrés avec succès"
     else
         echo "❌ Erreur lors du démarrage des conteneurs"
