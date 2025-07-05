@@ -27,9 +27,13 @@ RUN apk add --no-cache dumb-init
 # Copier les fichiers nécessaires
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/tsconfig*.json ./
+COPY --from=builder /app/nest-cli.json ./
+COPY --from=builder /app/ormconfig.ts ./
 
-# Installer uniquement les dépendances de production
-RUN npm install --omit=dev
+# Installer les dépendances de production + celles nécessaires aux migrations
+RUN npm install --omit=dev && \
+    npm install ts-node tsconfig-paths @types/node
 
 # Créer le répertoire pour les fichiers uploadés
 RUN mkdir -p /app/public/files
