@@ -91,7 +91,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
-          source: 'docker-compose.api.yml,scripts/,.env,package.json,package-lock.json,Dockerfile,tsconfig.json,nest-cli.json,ormconfig.ts,src/'
+          source: 'docker-compose.api.yml,scripts/,.env'
           target: '~/fast-foodie/'
           strip_components: 0
 

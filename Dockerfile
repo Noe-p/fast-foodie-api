@@ -35,8 +35,11 @@ COPY --from=builder /app/ormconfig.ts ./
 RUN npm install --omit=dev && \
     npm install ts-node tsconfig-paths @types/node
 
-# Créer le répertoire pour les fichiers uploadés
-RUN mkdir -p /app/public/files
+# Créer les répertoires nécessaires
+RUN mkdir -p /app/public/files /app/public
+
+# Créer un fichier index.html simple pour éviter les erreurs
+RUN echo '<!DOCTYPE html><html><head><title>Fast Foodie API</title></head><body><h1>Fast Foodie API</h1><p>API is running successfully!</p></body></html>' > /app/public/index.html
 
 # Utiliser dumb-init pour une meilleure gestion des signaux
 ENTRYPOINT ["dumb-init", "--"]
