@@ -7,6 +7,10 @@ set -e
 
 # Configuration
 BACKUP_DIR="${BACKUP_DIR:-./backups}"
+# S'assurer que le chemin est absolu si nécessaire
+if [[ "$BACKUP_DIR" == ./* ]]; then
+    BACKUP_DIR="$(pwd)/${BACKUP_DIR#./}"
+fi
 DB_BACKUP_DIR="${BACKUP_DIR}"
 IMAGES_BACKUP_DIR="${BACKUP_DIR}/images"
 CONTAINER_NAME="fast-foodie-api"
@@ -83,6 +87,12 @@ log "🚀 Début de la sauvegarde unifiée Fast Foodie..."
 # Créer les répertoires de sauvegarde
 mkdir -p "${DB_BACKUP_DIR}"
 mkdir -p "${IMAGES_BACKUP_DIR}"
+
+# Vérifier que les répertoires ont été créés
+if [ ! -d "${IMAGES_BACKUP_DIR}" ]; then
+    log "❌ Impossible de créer le répertoire de sauvegarde images: ${IMAGES_BACKUP_DIR}"
+    exit 1
+fi
 
 # Charger les variables d'environnement depuis .env
 if [ -f ".env" ]; then
