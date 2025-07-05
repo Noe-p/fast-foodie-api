@@ -77,25 +77,38 @@ if [ -f "${PROJECT_DIR}/scripts/backup-db.sh" ]; then
     cd "${PROJECT_DIR}"
     chmod +x scripts/backup-db.sh
     if ./scripts/backup-db.sh; then
-        log "✅ Sauvegarde terminée avec succès"
+        log "✅ Sauvegarde de la base de données terminée"
         
         # Nettoyer les anciennes sauvegardes (garder 7 jours)
-        log "🧹 Nettoyage des anciennes sauvegardes..."
+        log "🧹 Nettoyage des anciennes sauvegardes DB..."
         cd backups
         BACKUP_COUNT=$(ls -1 *.sql 2>/dev/null | wc -l)
         if [ "$BACKUP_COUNT" -gt 7 ]; then
             ls -1t *.sql | tail -n +8 | xargs rm -f
-            log "✅ Nettoyage terminé"
+            log "✅ Nettoyage DB terminé"
         else
-            log "ℹ️  Pas de nettoyage nécessaire ($BACKUP_COUNT sauvegardes)"
+            log "ℹ️  Pas de nettoyage DB nécessaire ($BACKUP_COUNT sauvegardes)"
         fi
     else
-        log "❌ Erreur lors de la sauvegarde"
+        log "❌ Erreur lors de la sauvegarde de la base de données"
         exit 1
     fi
 else
-    log "❌ Script de sauvegarde non trouvé: ${PROJECT_DIR}/scripts/backup-db.sh"
+    log "❌ Script de sauvegarde DB non trouvé: ${PROJECT_DIR}/scripts/backup-db.sh"
     exit 1
+fi
+
+# Sauvegarde des images (si le script existe)
+if [ -f "${PROJECT_DIR}/scripts/backup-images.sh" ]; then
+    log "🖼️  Lancement de la sauvegarde des images..."
+    chmod +x scripts/backup-images.sh
+    if ./scripts/backup-images.sh; then
+        log "✅ Sauvegarde des images terminée"
+    else
+        log "⚠️  Erreur lors de la sauvegarde des images (non critique)"
+    fi
+else
+    log "ℹ️  Script de sauvegarde d'images non trouvé (optionnel)"
 fi
 
 log "🎉 Sauvegarde automatique terminée"

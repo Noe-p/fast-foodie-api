@@ -99,3 +99,8 @@ jobs:
             export GITHUB_USERNAME="${{ github.actor }}"
             chmod +x scripts/deploy.sh
             ./scripts/deploy.sh
+
+            # Reconfigurer les sauvegardes automatiques
+            echo "⏰ Reconfiguration des sauvegardes automatiques..."
+            chmod +x scripts/setup-backup-cron.sh
+            ./scripts/setup-backup-cron.sh daily 02:00
