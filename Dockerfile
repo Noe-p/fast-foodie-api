@@ -8,8 +8,8 @@ COPY tsconfig*.json ./
 COPY nest-cli.json ./
 COPY ormconfig.ts ./
 
-# Installer les dépendances
-RUN npm install --omit=dev
+# Installer toutes les dépendances (incluant dev pour la construction)
+RUN npm install
 
 # Copier le code source
 COPY src/ ./src/
@@ -26,15 +26,13 @@ RUN apk add --no-cache dumb-init
 
 # Copier les fichiers nécessaires
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/ormconfig.ts ./
+
+# Installer uniquement les dépendances de production
+RUN npm install --omit=dev
 
 # Créer le répertoire pour les fichiers uploadés
 RUN mkdir -p /app/public/files
-
-# Installer sharp pour l'optimisation d'images
-RUN npm install sharp
 
 # Utiliser dumb-init pour une meilleure gestion des signaux
 ENTRYPOINT ["dumb-init", "--"]
