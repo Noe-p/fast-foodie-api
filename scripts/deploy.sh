@@ -83,16 +83,27 @@ deploy() {
         echo "$CR_PAT" | docker login ghcr.io -u "$GITHUB_USERNAME" --password-stdin
     fi
     
-    # Pull de la nouvelle image
-    echo "⬇️  Téléchargement de la nouvelle image..."
     if docker pull ghcr.io/noe-p/fast-foodie-api:main; then
         echo "✅ Image téléchargée avec succès"
     else
-        echo "⚠️  Image non trouvée, utilisation d'une image temporaire"
-        echo "ℹ️  L'image sera construite lors du prochain déploiement"
-        # Créer une image temporaire pour permettre le démarrage
-        docker pull node:18.17.0-alpine
-        docker tag node:18.17.0-alpine ghcr.io/noe-p/fast-foodie-api:main
+        echo "⚠️  Image non trouvée, construction locale..."
+        echo "ℹ️  Construction de l'image Docker..."
+        
+        # Créer un Dockerfile temporaire pour une image simple
+        cat > /tmp/Dockerfile.simple << 'EOF'
+FROM node:18.17.0-alpine
+WORKDIR /app
+RUN apk add --no-cache dumb-init
+COPY package*.json ./
+RUN npm install --omit=dev
+RUN mkdir -p /app/public/files
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["node", "-e", "console.log('API temporaire démarrée'); require('http').createServer((req, res) => { res.writeHead(200, {'Content-Type': 'text/plain'}); res.end('API temporaire - Déploiement en cours...'); }).listen(8000, () => console.log('Serveur temporaire sur le port 8000'));"]
+EOF
+        
+        # Construire l'image temporaire
+        docker build -f /tmp/Dockerfile.simple -t ghcr.io/noe-p/fast-foodie-api:main .
+        echo "✅ Image temporaire construite"
     fi
     
     # Démarrer les conteneurs
@@ -106,9 +117,19 @@ deploy() {
         exit 1
     fi
     
-    # Vérifier le statut
+    # Vérifier le statut immédiatement
     echo "📊 Statut des conteneurs:"
     docker compose -f "$COMPOSE_FILE" ps
+    
+    # Attendre un peu et vérifier les logs
+    echo "⏳ Attente de 5 secondes pour le démarrage..."
+    sleep 5
+    
+    echo "📋 Logs du conteneur API:"
+    docker logs fast-foodie-api --tail 20 || echo "Impossible de récupérer les logs du conteneur API"
+    
+    echo "📋 Logs du conteneur base de données:"
+    docker logs fast-foodie-db --tail 10 || echo "Impossible de récupérer les logs du conteneur DB"
 }
 
 # Fonction de vérification de santé
