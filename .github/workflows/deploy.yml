@@ -23,6 +23,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Debug workspace
+        run: |
+          echo "Current directory: $(pwd)"
+          echo "Repository contents:"
+          ls -la
+          echo "Docker compose file exists:"
+          test -f docker-compose.api.yml && echo "✅ docker-compose.api.yml found" || echo "❌ docker-compose.api.yml not found"
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -75,9 +83,12 @@ jobs:
 
       - name: Inject image tag into docker-compose.api.yml
         run: |
+          pwd
+          ls -la
           sed -i "s|\${GHCR_REGISTRY}|${{ env.GHCR_REGISTRY }}|g" docker-compose.api.yml
           sed -i "s|\${OWNER_LC}|${{ env.OWNER_LC }}|g" docker-compose.api.yml
           sed -i "s|\${SHA}|${{ env.SHORT_SHA }}|g" docker-compose.api.yml
+          echo "🔧 Variables injectées dans docker-compose.api.yml"
 
       - name: Copy deployment files
         uses: appleboy/scp-action@v0.1.7
