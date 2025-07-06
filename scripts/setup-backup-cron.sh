@@ -49,9 +49,15 @@ cd "${PROJECT_DIR}" || {
     exit 1
 }
 
-# Vérifier que docker compose est disponible
+# Vérifier que docker est disponible
 if ! command -v docker &> /dev/null; then
     log "❌ Erreur: docker n'est pas installé"
+    exit 1
+fi
+
+# Vérifier que docker compose est disponible
+if ! command -v docker-compose &> /dev/null && ! docker compose version &> /dev/null; then
+    log "❌ Erreur: docker-compose n'est pas installé"
     exit 1
 fi
 
@@ -63,52 +69,23 @@ export BACKUP_DIR="${PROJECT_DIR}/backups"
 
 # Charger les variables depuis .env
 if [ -f "${PROJECT_DIR}/.env" ]; then
-    export DB_HOST="$(grep TYPEORM_HOST .env | cut -d'=' -f2)"
-    export DB_PORT="$(grep TYPEORM_PORT .env | cut -d'=' -f2)"
-    export DB_USER="$(grep TYPEORM_USERNAME .env | cut -d'=' -f2)"
-    export DB_PASSWORD="$(grep TYPEORM_PASSWORD .env | cut -d'=' -f2)"
-    export DB_NAME="$(grep TYPEORM_DATABASE .env | cut -d'=' -f2)"
+    export $(grep -v '^#' "${PROJECT_DIR}/.env" | xargs)
 else
-    echo "❌ Fichier .env non trouvé dans ${PROJECT_DIR}"
-    exit 1
+    log "⚠️  Fichier .env non trouvé dans ${PROJECT_DIR}"
 fi
 
-if [ -f "${PROJECT_DIR}/scripts/backup-db.sh" ]; then
+if [ -f "${PROJECT_DIR}/scripts/backup.sh" ]; then
     cd "${PROJECT_DIR}"
-    chmod +x scripts/backup-db.sh
-    if ./scripts/backup-db.sh; then
-        log "✅ Sauvegarde de la base de données terminée"
-        
-        # Nettoyer les anciennes sauvegardes (garder 7 jours)
-        log "🧹 Nettoyage des anciennes sauvegardes DB..."
-        cd backups
-        BACKUP_COUNT=$(ls -1 *.sql 2>/dev/null | wc -l)
-        if [ "$BACKUP_COUNT" -gt 7 ]; then
-            ls -1t *.sql | tail -n +8 | xargs rm -f
-            log "✅ Nettoyage DB terminé"
-        else
-            log "ℹ️  Pas de nettoyage DB nécessaire ($BACKUP_COUNT sauvegardes)"
-        fi
+    chmod +x scripts/backup.sh
+    if ./scripts/backup.sh; then
+        log "✅ Sauvegarde terminée avec succès"
     else
-        log "❌ Erreur lors de la sauvegarde de la base de données"
+        log "❌ Erreur lors de la sauvegarde"
         exit 1
     fi
 else
-    log "❌ Script de sauvegarde DB non trouvé: ${PROJECT_DIR}/scripts/backup-db.sh"
+    log "❌ Script de sauvegarde non trouvé: ${PROJECT_DIR}/scripts/backup.sh"
     exit 1
-fi
-
-# Sauvegarde des images (si le script existe)
-if [ -f "${PROJECT_DIR}/scripts/backup-images.sh" ]; then
-    log "🖼️  Lancement de la sauvegarde des images..."
-    chmod +x scripts/backup-images.sh
-    if ./scripts/backup-images.sh; then
-        log "✅ Sauvegarde des images terminée"
-    else
-        log "⚠️  Erreur lors de la sauvegarde des images (non critique)"
-    fi
-else
-    log "ℹ️  Script de sauvegarde d'images non trouvé (optionnel)"
 fi
 
 log "🎉 Sauvegarde automatique terminée"
