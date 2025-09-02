@@ -128,3 +128,21 @@ jobs:
             # Reconfigurer les sauvegardes automatiques
             echo "⏰ Reconfiguration des sauvegardes automatiques..."
             ./scripts/setup-backup-cron.sh daily 02:00
+
+  smoke-test:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Run smoke tests
+        run: yarn test:smoke
